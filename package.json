@@ -1,0 +1,25 @@
+{
+  "id": "uview-ui",
+  "scripts": {
+    "test": "eslint . --fix"
+  },
+  "dependencies": {
+    "long": "^5.2.0",
+    "qiniu-js": "^3.4.0"
+  },
+  "devDependencies": {
+    "eslint": "^8.2.0",
+    "eslint-config-airbnb": "^19.0.0"
+  },
+  "name": "hsmp",
+  "description": "<p align=\"center\">\r     <img alt=\"logo\" src=\"https://uviewui.com/common/logo.png\" width=\"120\" height=\"120\" style=\"margin-bottom: 10px;\">\r </p>\r <h3 align=\"center\" style=\"margin: 30px 0 30px;font-weight: bold;font-size:40px;\">uView 2.0</h3>\r <h3 align=\"center\">多平台快速开发的UI框架</h3>",
+  "version": "1.0.0",
+  "main": "main.js",
+  "repository": {
+    "type": "git",
+    "url": "https://gitee.com/wu-ben-tiancheng/hsmp.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC"
+}

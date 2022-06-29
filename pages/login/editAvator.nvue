@@ -1,0 +1,378 @@
+<template>
+	<view class="change-avator">
+		<KpsImageCutter
+		  v-if="url != null && url != ''"
+		  @ok="onok"
+		  @cancel="oncancle"
+		  :url="url"
+		  :fixed="true"
+		  :width="400"
+		  :height="400"
+		>
+		</KpsImageCutter>
+		<div class="title">
+			<div class="sub-title">上传头像</div>
+		</div>
+		<div class="content">
+			<div :class="['avator', isHaveAvator?'':'no-have-avator']">
+				<!-- <u-upload :fileList="fileList5" @afterRead="afterRead" @delete="deletePic" name="5" multiple
+					:maxCount="1" width="256rpx" height="256rpx">
+				</u-upload> -->
+				<view @click="chooseImage" style="display: flex;justify-content: space-between;align-items: center;">
+					<image v-if="!avator" src="@/static/user_imge.png" style="width: 256rpx; height: 256rpx"></image>
+					<image v-else style="width: 256rpx; height: 256rpx" :src="avator" />
+				</view>
+			</div>
+			<!-- <img :src="avator" alt="" class="avator" srcset="" @click="chooseImg"> -->
+			<view class="desc" v-if="isHaveAvator">
+				后台审核通过后头像自动更新。
+			</view>
+		</div>
+		<div class="title" v-if="isHaveAvator">
+			<div class="sub-title">备注</div>
+			<div class="count">{{`${remark.length}/200`}}</div>
+		</div>
+		<div class="remark-edit" v-if="isHaveAvator">
+			<u--textarea
+				v-model="remark"
+				placeholder="请输入内容"
+				max-length="200"
+				border="none"
+			></u--textarea>
+		</div>
+		<div class="submit" @click="submit">提交{{isHaveAvator?'申请':''}}</div>
+		<WarnEditHeadimg :show='warnEditHeadImg' @confirm='warnEditHeadImgConfirm' @cancel='warnEditHeadImg = false' />
+		<u-toast ref="uToast"></u-toast>
+	</view>
+</template>
+
+<script>
+	import {
+		getOpenId,
+		getCompanyByHsCodeV2,
+		getCardDetail,
+		changeAvatar,
+		getUploadToken,
+		getDictType,
+		register,
+		updateUserInfoAvatar
+	} from '../../common/api.js'
+	import KpsImageCutter from "@/components/ksp-image-cutter/ksp-image-cutter.vue";
+	import WarnEditHeadimg from '@/components/warnEditHeadImg.vue'
+	
+	import config from '@/common/config'
+	function toast(title) {
+	  uni.showToast({
+	    title,
+	    icon: "none",
+	  });
+	}
+	export default {
+		data() {
+			return {
+				info: {},
+				avator: '',
+				remark: '',
+				maxlength: 200,
+				fileList5:[],
+				warnEditHeadImg: false,
+				url:'',
+				isHaveAvator: false,
+			}
+		},
+		components: { KpsImageCutter, WarnEditHeadimg },
+		onLoad() {
+			this.info = this.$store.state.userInfo
+			if (this.$store.state.userInfo.avatar) {
+				uni.setNavigationBarTitle({
+					title: '修改头像'
+				})
+				this.isHaveAvator = true;
+			} else {
+				uni.setNavigationBarTitle({
+					title: '上传头像'
+				})
+				this.isHaveAvator = false;
+			}
+			this.getQiniuToken()
+			this.avator = this.info.avatar
+			this.fileList5.push(this.info.avatar)
+			wx.login({
+				success: (res) => {
+					if (res.code) {
+						//发起网络请求
+						console.log('获取用户成功！' + res.code)
+						this.getOpenId(res.code)
+					} else {
+						console.log('获取用户登录态失败！' + res.errMsg)
+					}
+				}
+			});
+		},
+		methods: {
+			warnEditHeadImgConfirm() {
+				this.warnEditHeadImg = false;
+				this.chooseImage();
+			},
+			submit() {
+				
+				if (!this.avator) {
+					return toast("请上传头像");
+				}
+				if (!this.remark && this.isHaveAvator) {
+					return toast("请输入申请内容");
+				}
+				
+				let request = null;
+				if (!this.$store.state.userInfo.avatar) {
+					request = updateUserInfoAvatar({
+						id: this.$store.state.userInfo.id,
+						avatar: this.avator
+					})
+				} else {
+					request = changeAvatar({
+						avatar: this.avator,
+						remark: this.remark
+					}, { custom: {catch:true} })
+				}
+				uni.showLoading({
+					title: '上传中...',
+					mask: true
+				});
+				request.then(res => {
+					uni.showToast({
+						title:'提交成功',
+						icon: 'success',
+						duration: 1500
+					})
+					if (!this.isHaveAvator) {
+						this.$store.dispatch('setUserInfo', {
+						    ...this.$store.state.userInfo,
+						    avatar: this.avator,
+						})
+					}
+                    
+					setTimeout(() => {
+						uni.navigateBack();
+					}, 1500)
+				})
+			},
+			//获取用户信息
+			async getOpenId(code) {
+				var that = this
+				await getOpenId(code).then(res => {
+					if (res && JSON.stringify(res) !== "{}") {
+						that.openId = res
+						uni.setStorageSync('openId', res);
+					}
+				})
+			},
+			oncancle() {
+			  this.url = "";
+			},
+			chooseImage() {
+				if (!this._warnEditHeadImg && !this.isHaveAvator) {
+					this._warnEditHeadImg = true;
+					return this.warnEditHeadImg = true;
+				}
+				
+ 				uni.chooseImage({
+					count:1,
+					success: res => {
+						// await this.getQiniuToken();
+						// const result = await this.uploadFilePromise(res.tempFilePaths[0]);
+						this.url = res.tempFilePaths[0];
+					}
+				})
+			},
+			async onok(ev) {
+				uni.showLoading({
+					title: '上传中...',
+					mask: true
+				});
+			  this.url = ""; //隐藏组件
+			  try {
+			    await this.getQiniuToken();
+				uni.showLoading({
+					title: '上传中...',
+					mask: true
+				});
+			    const result = await this.uploadFilePromise(ev.path);
+			    this.avator = result;
+				uni.showToast({
+					title: "上传成功",
+					icon: "success",
+					mask: true,
+				});
+				this.url = ''
+			  } catch (error) {
+			    toast(typeof error === "string" ? error : "请求出错");
+			  }
+			},
+			chooseImg() {
+				uni.chooseImage({
+					success: (res) => {
+						this.avator = res.tempFilePaths[0]; //剪裁组件显示
+					},
+				});
+			},
+			getQiniuToken() { //获取七牛的uptoken
+				var that = this
+				getUploadToken().then(res => {
+					if (res && JSON.stringify(res) !== "{}") {
+						this.qiniuToken = res
+					}
+			
+				})
+			
+			},
+			async afterRead(event) {
+				// 当设置 mutiple 为 true 时, file 为数组格式，否则为对象格式
+				let lists = [].concat(event.file)
+				console.log(lists)
+				let fileListLen = this[`fileList${event.name}`].length
+				lists.map((item) => {
+					this[`fileList${event.name}`].push({
+						...item,
+						status: 'uploading',
+						message: '上传中'
+					})
+				})
+				for (let i = 0; i < lists.length; i++) {
+					const result = await this.uploadFilePromise(lists[i].url, event.name)
+					let item = this[`fileList${event.name}`][fileListLen]
+					this[`fileList${event.name}`].splice(fileListLen, 1, Object.assign(item, {
+						status: 'success',
+						message: '',
+						url: result
+					}))
+					fileListLen++
+				}
+			},
+			uploadFilePromise(url, name) {
+				var that = this
+				return new Promise((resolve, reject) => {
+					let a = uni.uploadFile({
+						url: 'https://upload-z1.qiniup.com/',
+						// url: config.baseUrl + '/wechat/common/upload',
+						filePath: url,
+						name: 'file',
+						formData: {
+							token: that.qiniuToken,
+						},
+						success: (res) => {
+							setTimeout(() => {
+			
+								if (res.data) {
+									// var data = JSON.parse(res.data);
+									console.log(res)
+									var imgData = JSON.parse(res.data);
+									console.log(imgData)
+									if (name == 5) {
+										that.frontImg = config.qiniuUrl + imgData.key
+										console.log(config.qiniuUrl + imgData.key)
+										that.fileList5.forEach(item => {
+											item.url = config.qiniuUrl + imgData.key
+										})
+										// that.fileList5.push({url:config.baseUrl + imgData.fileName})
+										console.log(that.fileList5)
+									} else if (name == 6) {
+										that.reverseImg = config.qiniuUrl + imgData.key
+										that.fileList6.forEach(item => {
+											item.url = config.qiniuUrl + imgData.key
+										})
+										// that.fileList6.push({url:config.baseUrl + imgData.fileName})
+									}
+									resolve(config.qiniuUrl + imgData.key)
+								}
+			
+							}, 1000)
+						}
+					});
+				})
+			},
+		},
+	}
+</script>
+
+
+<style lang="scss" scoped>
+	.change-avator {
+		width: 100%;
+		position: fixed;
+		background: #F1F4F7;
+		top: 0;
+		left: 0;
+		bottom: 0;
+		right: 0;
+		overflow: hidden;
+		padding-top: 40upx;
+		.no-have-avator {
+			position: relative;
+			top: 60rpx;
+		}
+		.title {
+			width: 600upx;
+			margin: 0 auto 20upx;
+			position: relative;
+			.sub-title {
+				font-size: 30upx;
+				font-weight: 400;
+				color: #333333;
+				line-height: 42upx;
+			}
+			.count {
+				position: absolute;
+				font-size: 30upx;
+				font-family: PingFangSC-Regular, PingFang SC;
+				font-weight: 400;
+				color: #666666;
+				line-height: 42upx;
+				top: 0;
+				right: 0;
+			}
+		}
+		.submit {
+			width: 600upx;
+			height: 88upx;
+			background: #3A8CF0;
+			border-radius: 8upx;
+			margin: 0 auto;
+			text-align: center;
+			font-size: 32upx;
+			font-weight: 400;
+			color: #FFFFFF;
+			line-height: 88upx;
+		}
+		.remark-edit {
+			width: 600upx;
+			height: 216upx;
+			background: #FFFFFF;
+			border-radius: 8upx;
+			margin: 0 auto 40upx;
+		}
+		.content {
+			width: 600upx;
+			height: 470upx;
+			background: #FFFFFF;
+			border-radius: 8upx;
+			margin: 0 auto 20rpx;
+			overflow: hidden;
+			.avator {
+				width: 256upx;
+				height: 256upx;
+				margin: 56upx auto 40upx;
+			}
+			.desc {
+				margin: 0 42upx;
+				font-size: 28upx;
+				font-family: PingFangSC-Medium, PingFang SC;
+				font-weight: 500;
+				color: #666666;
+				line-height: 40upx;
+				text-align: center;
+			}
+		}
+	}
+	
+</style>

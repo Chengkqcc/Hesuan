@@ -1,0 +1,429 @@
+<template>
+	<view class="user-detail">
+		<div class="card">
+			<div class="header" @click="open">
+				<div class="avatar-name">头像</div>
+				<img class="avator"
+					:src="info.avatar ? info.avatar : 'https://qiniu.xzlglobal.com/FnXkGW7ZrH5skQxGCxAUqZJ52S4p'" alt=""
+					srcset="">
+				<img class="open" src="https://qiniu.xzlglobal.com/hs%2Fmp%2Ficon_more_v2%402x.png" alt="" srcset="">
+			</div>
+			<u-divider></u-divider>
+			<div class="options">
+				<div class="name">姓名</div>
+				<div class="info">{{info.name}}</div>
+			</div>
+			<div class="options">
+				<div class="name">证件型号</div>
+				<div class="info">{{documentType}}</div>
+			</div>
+			<div class="options">
+				<div class="name">证件号码</div>
+				<div class="info">{{idNumber}}</div>
+			</div>
+			<div class="options">
+				<div class="name">手机号码</div>
+				<div class="phon-edit" @click="editPhone">
+					<div class="info_phone">{{phone}}</div>
+					<img src="https://qiniu.xzlglobal.com/hs%2Fmp%2Ficon_edit%402x.png" class="info_phone_edit" alt=""
+						srcset="">
+				</div>
+			</div>
+			<div class="options">
+				<div class="name">版本号</div>
+				<div class="info">{{version_number}}</div>
+			</div>
+			<u-divider></u-divider>
+			<p>在您展示健康状态或扫码登记时，以上个人信息将 以脱敏形式呈现。</p>
+		</div>
+		<div class="quit" @click="quit">退出登录</div>
+		<u-modal :show="showEdit" :closeOnClickOverlay="true" showCancelButton title="修改手机号" @confirm="confirm"
+			@cancel="showEdit = false">
+			<view class="slot-content">
+				<u--form labelPosition="left" ref="form1" labelWidth="140rpx">
+					<u-form-item label="手机号" borderBottom ref="item1">
+						<u--input placeholder="请输入手机号" border="none" type='number' v-model="editPhoneNum">
+						</u--input>
+					</u-form-item>
+					<u-form-item label="验证码" prop="code" borderBottom>
+						<u--input v-model="code" border="none" type='number' :maxlength='6' placeholder="请填写验证码">
+						</u--input>
+						<u-button slot="right" @tap="getCode" :text="tips" type="success" size="mini"
+							:disabled="disabled1">
+						</u-button>
+					</u-form-item>
+				</u--form>
+			</view>
+		</u-modal>
+		<u-toast ref="uToast"></u-toast>
+		<u-code ref="uCode" @change="codeChange" seconds="90" @start="disabled1 = true" @end="disabled1 = false">
+		</u-code>
+	</view>
+</template>
+
+<script>
+	import {
+		getOpenId,
+		loginout,
+		getDictType,
+		verifyAvatar,
+		updateUserInfo,
+		getUserInfoById,
+		sendSms,
+		verifySms
+	} from '../../common/api.js'
+	import {
+		checkPhone
+	} from '@/util/regext'
+	import log from '@/util/log.js';
+	export default {
+		data() {
+			return {
+				disabled1: false,
+				tips: '获取验证码',
+				info: {
+					name: "",
+					code: "",
+					phone: "",
+					avator: ''
+				},
+				version_number: '2.0.0',
+				code: '',
+				showEdit: false,
+				editPhoneNum: '',
+				typeList: []
+			}
+		},
+		onShow() {
+			// this.info = this.$store.state.userInfo;
+			this.getUserInfo();
+			// console.log('info', this.info, )
+		},
+		onLoad() {
+			this.getDictType()
+			const accountInfo = wx.getAccountInfoSync();
+			this.version_number = accountInfo.miniProgram.version // 小程序 版本号
+		},
+		computed: {
+			phone() {
+				if (!this.info.phone) return
+				return this.info.phone.substring(0, 3) + '******'+this.info.phone.substring(9, 11)
+			},
+			idNumber() {
+				if (!this.info.idNumber) return
+				var str = this.info.idNumber
+				if (18 <= str.length) {
+					let leftStr = str.substring(0, 6);
+					let rightStr = str.substring(str.length - 4, str.length);
+					
+					let strCon = ''
+					for (let i = 0; i < str.length - 4 - 6; i++) {
+						strCon += '*';
+					}
+					return leftStr + strCon + rightStr;
+				}else if(str.length>4){
+					return str.substr(0, str.length-4)+'****'
+				}else{
+					return str.substr(0, str.length-1)+'****'
+				}
+				
+			},
+			documentType() {
+				if (!this.info.documentType && this.typeList.length) return
+				let documentType = ''
+				this.typeList.forEach(res => {
+					if (res.dictValue === this.info.documentType.toString()) {
+						documentType = res.dictLabel
+					}
+				})
+				return documentType
+			}
+		},
+		methods: {
+			
+			getUserInfo(){
+				getUserInfoById({
+					params: {
+						userId: this.$store.state.userInfo.id
+					},
+					custom: {
+						toast: true,
+						catch: true
+					}
+				}).then(res => {
+					this.info = res
+					this.$store.dispatch("setUserInfo", res);
+				})
+			},
+			
+			codeChange(text) {
+				this.tips = text;
+			},
+			getCode() {
+				var phone = this.editPhoneNum
+				var message = ''
+				if (!checkPhone(phone))
+					message = '手机号码格式不正确'
+				if (!phone) message = '请输入手机号码'
+
+				if (message) {
+					uni.$u.toast(message);
+					return false
+				}
+
+				if (this.$refs.uCode.canGetCode) {
+					// 模拟向后端请求验证码
+					uni.showLoading({
+						title: '正在获取验证码'
+					})
+					var param = {
+						phone: phone,
+						scene: '修改手机号'
+					}
+					sendSms({
+						params: param,
+						custom: {
+							toast: true,
+							catch: true
+						}
+					}).then(res => {
+						uni.hideLoading();
+						// 这里此提示会被this.start()方法中的提示覆盖
+						uni.$u.toast('验证码已发送');
+						// 通知验证码组件内部开始倒计时
+						this.$refs.uCode.start();
+					}).catch(err => {
+						console.log(err)
+						// uni.$u.toast(err.msg);
+						// uni.hideLoading();
+					})
+				} else {
+					uni.$u.toast('倒计时结束后再发送');
+				}
+			},
+			resetName(name) {
+				let val = ''
+				const length = name.length
+				for (let i = 0; i < length; i++) {
+					if (i > 0) {
+						val = val + '*'
+					} else {
+						val = val + name.substring(0, 1)
+					}
+				}
+				return val
+			},
+			async getDictType() {
+				await getDictType("document_type").then(res => {
+					if (res && JSON.stringify(res) !== "{}") {
+						this.typeList = res
+					}
+				})
+			},
+			open() {
+				verifyAvatar().then(res => {
+					switch (res.permitAudit) {
+						case 0:
+							uni.navigateTo({
+								url: '/pages/nucleic/applylose'
+							})
+							break;
+						case 2:
+							uni.navigateTo({
+								url: '/pages/nucleic/applyreject?source=avatar&reject=' + res.rejectReason
+							})
+							break;
+						default:
+							uni.navigateTo({
+								url: '/pages/login/editAvator',
+							})
+							break;
+					}
+				})
+			},
+			quit() {
+				loginout().then(res => {
+					log.info('用户详情点击登出，接口返回信息：'+JSON.stringify(res))
+					uni.removeStorageSync('token')
+					uni.clearStorage()
+					this.$store.dispatch('setLoginStatus', false);
+					uni.navigateBack({
+						delta: 1,
+					});
+				})
+			},
+			editPhone() {
+				this.editPhoneNum = ''
+				this.code = ''
+				this.showEdit = true
+			},
+			confirm() {
+				if (!this.editPhoneNum) {
+					return uni.$u.toast('请输入手机号');
+				}
+				if (!checkPhone(this.editPhoneNum)) {
+					return uni.$u.toast('手机号格式不正确');
+				}
+				if (!this.code) {
+					return uni.$u.toast('请输入验证码');
+				}
+
+				var param = {
+					phone: this.editPhoneNum,
+					scene: '修改手机号',
+					code: this.code
+				}
+				verifySms({
+					params: param,
+					custom: {
+						toast: true,
+						catch: true
+					}
+				}).then(res => {
+					uni.hideLoading();
+					updateUserInfo({
+						id: this.info.id,
+						phone: this.editPhoneNum,
+					}).then(res => {
+						this.showEdit = false
+						uni.showToast({
+							title: '修改成功',
+							icon: 'success',
+							duration: 1000
+						})
+						this.info.phone = this.editPhoneNum
+					})
+				}).catch(err => {
+					console.log(err)
+					// uni.$u.toast(err.msg);
+					// uni.hideLoading();
+				})
+
+
+			}
+		},
+	}
+</script>
+
+<style lang="scss" scoped>
+	.slot-content {
+		padding: 0 20rpx;
+		width: 100%;
+	}
+
+	.user-detail {
+		position: fixed;
+		top: 0;
+		left: 0;
+		bottom: 0;
+		right: 0;
+		background: #F1F4F7;
+		overflow: hidden;
+	}
+
+	.quit {
+		z-index: 10;
+		position: fixed;
+		bottom: 40upx;
+		left: 50%;
+		transform: translateX(-50%);
+		width: 600upx;
+		height: 88upx;
+		border-radius: 4px;
+		border: 2upx solid #DDDDDD;
+		text-align: center;
+		font-size: 32upx;
+		font-family: PingFangSC-Regular, PingFang SC;
+		font-weight: 400;
+		color: #DA0303;
+		line-height: 88upx;
+	}
+
+	.avatar-name {
+		font-size: 30upx;
+		font-family: PingFangSC-Regular, PingFang SC;
+		font-weight: 400;
+		color: #333333;
+		line-height: 42upx;
+		margin: 20upx 0;
+	}
+
+	.header {
+		position: relative;
+		overflow: hidden;
+	}
+
+	.avator {
+		width: 80upx;
+		height: 80upx;
+		position: absolute;
+		border-radius: 50%;
+		right: 50upx;
+	}
+
+	.open {
+		width: 16upx;
+		height: 28upx;
+		position: absolute;
+		right: 2upx;
+		top: 26upx;
+	}
+
+	.card {
+		width: 600upx;
+		background: #FFFFFF;
+		border-radius: 8upx;
+		padding: 46upx 36upx 26upx;
+		box-sizing: border-box;
+		margin: 40upx auto 0;
+
+		p {
+			font-size: 24upx;
+			font-family: PingFangSC-Regular, PingFang SC;
+			font-weight: 400;
+			color: #666666;
+			line-height: 34upx;
+		}
+
+		.options {
+			margin-bottom: 20upx;
+			position: relative;
+
+			.name {
+				font-size: 30upx;
+				font-family: PingFangSC-Regular, PingFang SC;
+				font-weight: 400;
+				color: #333333;
+				line-height: 42upx;
+			}
+
+			.info,
+			.info_phone {
+				font-size: 30upx;
+				font-family: PingFangSC-Regular, PingFang SC;
+				font-weight: 400;
+				color: #666666;
+				line-height: 42upx;
+				position: absolute;
+				right: 0;
+			}
+
+			.phon-edit {
+				position: absolute;
+				right: 0;
+			}
+
+			.info_phone {
+				right: 20px;
+			}
+
+			.info_phone_edit {
+				width: 24upx;
+				height: 26upx;
+				position: absolute;
+				top: 8upx;
+				right: 0;
+			}
+		}
+	}
+</style>

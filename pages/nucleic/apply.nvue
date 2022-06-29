@@ -1,0 +1,207 @@
+<template>
+	<view class="backge">
+		<view class="u-page">
+			<view class="content">
+				<u-read-more ref="uReadMore" :showHeight="showHeight" toggle @open="open" @close="close">
+					<u-parse :content="content" @load="load" :tag-style="tagStyle"></u-parse>
+				</u-read-more>
+			</view>
+			<view class="u-demo-block">
+				<view class="u-demo-block__content demo_div"
+					style=" padding: 0 20px 20px 20px; flex-direction: column;align-items: stretch;flex-wrap: nowrap;">
+					<u-button text="立即申请" @click="apply" size="large" type="primary"></u-button>
+				</view>
+			</view>
+			<u-loading-page :loadingText="loadingPageData.loadingText" :image="loadingPageData.image"
+				:loadingMode="loadingPageData.loadingMode" :bgColor="loadingPageData.bgColor" :loading="loading"
+				:color="loadingPageData.color" :loadingColor="loadingPageData.loadingColor">
+			</u-loading-page>
+		</view>
+	</view>
+</template>
+
+<script>
+	import {
+		getOpenId,
+		getUserInfo
+	} from '../../common/api.js'
+	export default {
+		data() {
+			return {
+				loadingPageData: {
+					// 自定义提示内容
+					loadingText: '',
+					// 自定义图片
+					image: '',
+					// 自定义加载动画模式
+					loadingMode: '',
+					// 自定义背景色
+					bgColor: '#ffffff',
+				},
+				loading: false,
+				background1: "https://admin.xzlglobal.com/hsfile/bg_mp.jpg",
+				content: `<p>市民朋友：</p><p>
+    您好！2022年2月23日我市东兴市发生新冠肺炎疫情以来，经过五十多天的共同努力奋战，在全体市民的全力支持与配合下，疫情快速扩散的势头得到控制，没有发生规模性疫情，防控工作取得阶段性成果。
+</p><p>
+    为有序恢复人员流动，获得“无疫社区网格”称号的网格内市民可以通过本小程序申请电子通行证，持证在城区内的无疫网格间自由流动，居民所需生活物资自行采购解决。“无疫社区网格”实行动态管理，如发生疫情，要取消“无疫社区网格”称号，并恢复严格居家健康监测的管控措施。
+</p><p>
+    请您遵守市疫情防控指挥部相关防控要求，积极参与“无疫社区网格”创建，做好个人防护，早日夺取这场疫情防控阻击战歼灭战的最后胜利，恢复正常生产生活秩序。
+</p><p><br/>
+</p>`,
+				showHeight: '900rpx',
+				tagStyle: {
+					p: 'color: #606266; line-height: 40prx;font-size:36rpx'
+				}
+			};
+		},
+		onShow() {
+
+			uni.hideShareMenu()
+			var that = this
+			uni.setStorageSync('openId', "");
+			uni.setStorageSync('userInfo', "");
+			uni.setStorageSync('cardImgData', "");
+			uni.setStorageSync('cardDetailData', '');
+			uni.setStorageSync('generationType', false);
+			//根据code获取openid等信息
+			wx.login({
+				success: function(res) {
+					if (res.code) {
+						//发起网络请求
+						console.log('获取用户成功！' + res.code)
+						that.getOpenId(res.code)
+					} else {
+						console.log('获取用户登录态失败！' + res.errMsg)
+					}
+				}
+			});
+		},
+
+		onLoad() {
+
+		},
+		methods: {
+			load() {
+                this.$refs.uReadMore.init();
+            },
+			getUserInfo(openId) {
+				this.openLoadingPage()
+				getUserInfo(openId).then(res => {
+					if (res && JSON.stringify(res) !== "{}") {
+						console.log(res.permitApply.state)
+						if (res.permitApply && res.permitApply != null && res.permitApply.state === '0') {
+							uni.redirectTo({
+								url: '/pages/nucleic/applylose',
+							})
+						} else if (res.permitApply && res.permitApply != null && res.permitApply.state === '1') {
+							uni.setStorageSync('userInfo', JSON.stringify(res));
+							uni.redirectTo({
+								url: '/pages/nucleic/permit',
+							})
+						} else if (res.permitApply && res.permitApply != null && res.permitApply.state === '2') {
+							uni.redirectTo({
+								url: '/pages/nucleic/applyreject?reject=' + res.permitApply.reject,
+							})
+						}
+
+					}
+				}).catch(err => {
+
+				})
+			},
+
+			//申请通行证
+			apply() {
+				uni.navigateTo({
+					url: '/pages/nucleic/uploadcard',
+				})
+			},
+			openLoadingPage() {
+				this.loadingPageData = {
+					loadingText: '',
+					image: '',
+					loadingMode: '',
+					bgColor: '#ffffff',
+				}
+				// 自定义背景色
+				this.loadingPageData.loadingMode = 'spinner'
+				this.loadingPageData.bgColor = 'rgba(0, 0, 0, 0.4)'
+				this.loadingPageData.loadingText = "加载中"
+				this.loadingPageData.color = '#eee',
+					this.loading = true
+				setTimeout(() => {
+					this.loading = false
+				}, 1000)
+			},
+			//获取用户信息
+			async getOpenId(code) {
+				var that = this
+
+				await getOpenId(code).then(res => {
+					console.log(res)
+					if (res && JSON.stringify(res) !== "{}") {
+						uni.setStorageSync('openId', res);
+						that.getUserInfo(res)
+					}
+				}).catch(err => {
+
+				})
+			},
+			load() {
+				this.$refs.uReadMore.init()
+			},
+			open(name) {
+				console.log('open', name);
+			},
+			close(name) {
+				console.log('close', name);
+			}
+		},
+	}
+</script>
+
+<style lang="scss" scoped>
+	
+	.content {
+		// margin-top: 30px;
+		padding: 30upx;
+		margin-bottom: 140upx;
+		// height: calc(100%-400px);
+		background-color: #ffffff;
+		border-radius: 5px;
+		font-size: 30upx;
+		box-shadow: 5px 5px 5px 0 rgba(0, 0, 0, .05);
+		-webkit-box-shadow: #d4d2d2 0px 0px 10px;
+		-moz-box-shadow: #d4d2d2 0px 0px 10px;
+	}
+
+	
+	.backge {
+		width: calc(100%);
+		height: 100vh;
+		background-image: url('https://admin.xzlglobal.com/hsfile/bg_mp.jpg');
+		background-size: 100% 100vh;
+		background-repeat: no-repeat;
+		background-repeat: no-repeat;
+	}
+
+	.u-page {
+		// height: 100vh;
+		&__button-item {
+			margin: 0 15px 15px 0;
+		}
+	}
+
+	.u-demo-block__content {
+		flex-direction: row;
+		flex-wrap: wrap;
+		align-items: center;
+	}
+
+	.demo_div {
+		left: 0;
+		position: fixed;
+		bottom: 0;
+		width: 100%;
+	}
+</style>

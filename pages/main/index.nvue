@@ -1,0 +1,1265 @@
+<template>
+	<view class="home">
+		<view class="header" :style="{paddingTop: titleBarHeight}">
+			<view class="title">
+				<image src="https://qiniu.xzlglobal.com/hs/mp/icon_logo.png" />
+				{{ title }}
+			</view>
+			<!-- <view class="notice">
+				<img class="icon" src="https://qiniu.xzlglobal.com/hs/mp/icon_tongzhi.png" alt="" srcset="" />
+				<view class="info">
+					<swiper class="swiper-item" :autoplay="true" :interval="3000" :duration="600" vertical>
+						<swiper-item class="swiper-item" v-for="(item, idx) in userNotices" :key='idx'>
+							<view class="swiper-item" @click="checkMsg(item)">{{item.title}}</view>
+						</swiper-item>
+					</swiper> -->
+					<!-- 东兴市新冠病毒核酸检测固定采样点位于东兴市新冠病毒核酸检测固定采样点位于 -->
+				<!-- </view>
+				<view class="notice-menu" @click="toPages({path:'/pages/nucleic/notification'})">
+					<image src='https://qiniu.xzlglobal.com/hs/mp/icon_allnews.png' />
+					<view class="number" v-if="unreadCount != 0">{{unreadCount}}</view>
+				</view>
+			</view> -->
+			<view style="padding: 0 40rpx;margin-top: 90rpx;">
+				<view class="login" @click="goDetail">
+					<img class="wx-logo"
+						:src="userDetail.avatar ? userDetail.avatar : 'https://qiniu.xzlglobal.com/hs/mp/icon_morentou.png'"
+						alt="" srcset="" />
+					<p>{{ isLogin ? userName : "未登录" }}</p>
+					<img class="to-user-info" src="https://qiniu.xzlglobal.com/hs/mp/icon_more.png" alt="" />
+				</view>
+			</view>
+			<view class="options">
+				<view class="option-grid">
+					<view class="content">
+                        <view class="title-grid">常用功能</view>
+                        <u-line style="margin-top: 17rpx;"></u-line>
+                        <u-grid :border="false" col="3" bgColor="#FFFFFF">
+                            <u-grid-item v-for="(listItem,listIndex) in passList" :key="listIndex"
+                                @click="toPages(listItem)">
+                                <view class="grid-img">
+                                    <u--image :src="listItem.icon" :width="listItem.width" :height="listItem.height">
+                                    </u--image>
+                                </view>
+
+                                <text class="grid-text">{{listItem.name}}</text>
+
+                            </u-grid-item>
+                        </u-grid>
+                    </view>
+				</view>
+
+
+<!-- 				<view class="option-grid">
+					<view class="content">
+						<view class="title-grid">报备通行证</view>
+						<u-line style="margin-top: 27rpx;"></u-line>
+						<u-grid :border="false" col="3" bgColor="#FFFFFF">
+							<u-grid-item v-for="(listItem,listIndex) in reportList" :key="listIndex"
+								@click="toPages(listItem)">
+								<view class="grid-img">
+									<u--image :src="listItem.icon" :width="listItem.width" :height="listItem.height">
+									</u--image>
+								</view>
+								<text class="grid-text">{{listItem.name}}</text>
+							</u-grid-item>
+						</u-grid>
+					</view>
+				</view> -->
+				<view class="main_tips">
+					<image src="/static/logo1.png"></image>
+					<text>东兴市智慧化管理平台服务号</text>
+					<button class="attention">关注</button>
+				</view>
+                <view class="option-grid" @click="topageIm">
+					<image src="https://qiniu.xzlglobal.com/hs/mp/sy_dxy_bg@2x.png" style="width: 100%;height: 210rpx;"></image>
+                    <!-- <u--image :src="imMsg.icon" style="width: 100%;" height="110" mode="widthFix"></u--image> -->
+                </view>
+				<view class="option-grid options_special_grid">
+					<view v-for="(item,index) in list1" :key="item.name" class="bottom_item content">
+							<view class="title-grid title_spegrid">
+								<text>{{  item.name  }}</text>
+								<u-icon name="more-dot-fill" size="24"></u-icon>
+							</view>
+							<u-line style="margin-top: 17rpx;"></u-line>
+							<news :current="index" :newArray="newsArrayList"></news>
+					</view>
+
+						<!-- <view class="title-grid">政府专栏</view>
+						<u-line style="margin-top: 17rpx;"></u-line> -->
+						<!-- <u-grid :border="false" col="3" bgColor="#FFFFFF">
+							<u-grid-item v-for="(listItem,listIndex) in governmentList" :key="listIndex"
+								@click="toPages(listItem)">
+								<view class="grid-img">
+									<u--image :src="listItem.icon" :width="listItem.width" :height="listItem.height">
+									</u--image>
+								</view>
+								<text class="grid-text">{{listItem.name}}</text>
+							</u-grid-item>
+						</u-grid> -->
+						<!-- 原本的tab切换 -->
+<!-- 						<u-tabs 
+                            :list="list1" 
+                            @change="change" 
+                            lineWidth="60rpx"
+					        lineHeight="6rpx"
+							lineColor="#7CA2F4"
+                            :activeStyle="{
+                                color: '#303133',
+                                fontWeight: 'bold',
+                                fontSize:'32rpx',
+                                transform: 'scale(1)'
+                            }"
+                            :inactiveStyle="{
+                                color: '#606266',
+                                fontSize:'32rpx',
+                                transform: 'scale(1)'
+                            }"
+							:current="currentIndex"
+                            :scrollable="false">
+                        </u-tabs> -->   
+				</view>
+
+				<!-- <view class="option" v-for="(item, index) in partList" @click="toPages(item)">
+					<div v-if="item.tag" class="tag" :style="{ background: item.tagColor }">
+						{{ item.tag }}
+					</div>
+					<img class="logo_icon" :style="{
+			    width: item.width + 'rpx',
+			    top: item.top + 'rpx',
+			    height: item.height + 'rpx',
+			  }" :src="item.icon" alt="" srcset="" />
+					<div class="name">{{ item.name }}</div>
+				</view> -->
+			</view>
+			<u-toast ref="uToast"></u-toast>
+			<Notice :detail='noticeDetail' />
+			<u-modal :show="showNetwork" title="温馨提示" :content='content' @confirm="showConfirm()"></u-modal>
+		</view>
+
+
+	</view>
+</template>
+
+<script>
+	import {
+		checkLogin,
+		getUserDetailInfo,
+		userPassState,
+		getMerchantInfo,
+		userNoticePopup,
+		getUserInfoById,
+		userPassandrecordState,verifyAvatar,
+		companyTree,
+		sqmyList
+	} from "../../common/api.js";
+	import config from '@/common/config';
+	import Base64 from "@/components/base64/base64.js";
+	import {
+		authcode
+	} from '@/components/authcode/authcode.js' //这里是目录
+	import $store from '@/store/index.js';
+	import {
+		mapState
+	} from 'vuex';
+	import Notice from "./notice.vue";
+	import news from "./news.vue"
+	import log from '@/util/log.js';
+	async function checkPasseported(fn) {
+		try {
+			const result = await userPassandrecordState($store.state.userInfo.idNumber, {
+				custom: {
+					catch: true
+				}
+			});
+			const {
+				userState,
+				userPassRequestRecord
+			} = result;
+			console.log('result', result)
+			if (userState != null) {
+				// 通行证存在,直接显示通行证状态
+				fn();
+			} else if (userPassRequestRecord == null) {
+				// 没有申请记录,直接跳转申请页面
+				goApply();
+			} else {
+				uni.$u.toast("电子通行证申请通过才能申请进出东兴报备");
+				return false
+			}
+
+		} catch (error) {
+			console.log(error)
+			if (error.code == 500) {
+				goApply();
+			} else {
+				uni.showToast({
+					title: error.msg || '加载出错',
+					icon: 'none'
+				})
+			}
+		}
+
+		function goApply() {
+			uni.navigateTo({
+				url: '/pages/nucleic/passApplyOwn'
+			})
+		}
+	}
+
+	async function checkPass(fn, isReported) {
+		try {
+			const result = await userPassandrecordState($store.state.userInfo.idNumber, {
+				custom: {
+					catch: true
+				}
+			});
+			const {
+				userState,
+				userPassRequestRecord
+			} = result;
+			console.log('result', result)
+			if (userState != null) {
+				// 通行证存在,直接显示通行证状态
+				fn();
+			} else if (userPassRequestRecord == null) {
+				// 没有申请记录,直接跳转申请页面
+				goApply();
+			} else if (isReported) {
+				uni.$u.toast("电子通行证申请通过才能申请进出东兴报备");
+				return false
+			} else if (userPassRequestRecord.permitAudit == 0) {
+				// 申请待审核
+				uni.navigateTo({
+					url: '/pages/nucleic/applylose?source=own'
+				})
+			} else if (userPassRequestRecord.permitAudit == 1) {
+				// 申请通过,但是没通行证,一般意味着申请成功后通行证被删除.
+				// 可以从新发起申请
+				// 也可以直接跳转申请页面
+				goApply();
+			} else if (userPassRequestRecord.permitAudit == 2) {
+				// 申请被驳回,没通行证,一般意味着申请成功后通行证被删除
+				// 可以从新发起申请
+				uni.navigateTo({
+					url: '/pages/nucleic/applyreject?source=own&reject=' + result.userPassRequestRecord
+						.rejectReason
+				})
+			}
+
+		} catch (error) {
+			console.log(error)
+			if (error.code == 500) {
+				goApply();
+			} else {
+				uni.showToast({
+					title: error.msg || '加载出错',
+					icon: 'none'
+				})
+			}
+		}
+
+		function goApply() {
+			uni.navigateTo({
+				url: '/pages/nucleic/passApplyOwn'
+			})
+		}
+	}
+	export default {
+		components: {
+			Notice,
+			news
+		},
+		data() {
+			return {
+				showNetwork: false,
+				content: '可能由于信号偏弱、网络不稳定原因，请稍后再试.',
+				isConnect: true,
+				noticeDetail: null,
+				title: "东兴市智慧化管理平台",
+				titleBarHeight: "0px",
+				userName: "",
+				
+				userDetail: {},
+                // imSrc:''
+				currentIndex:0,
+				newsArrayList:[],
+				list1:[{
+					 name: '通知公告',
+				},{
+					 name: '群众有话说',
+				},
+				{
+					 name: '常见问题',
+				}
+				],
+				unreadCount: 0,
+				userNotices: [],
+				passList: [
+					{
+						name: "网格证",
+						icon: 'https://qiniu.xzlglobal.com/hs/mp/icon_home1@2x.png',
+						width: '84rpx',
+						height: '80rpx',
+						async routerLink() {
+							checkPass(() => {
+								getUserInfoById({
+									params: {
+										userId: $store.state.userInfo.id
+									},
+									custom: {
+										toast: true,
+										catch: true
+									}
+								}).then(res => {
+									this.$store.dispatch("setUserInfo", res);
+									uni.navigateTo({
+										url: '/pages/nucleic/passSelect'
+									})
+								
+								})
+								
+							})
+						},
+						// async routerLink() {
+						// 	checkPass(() => {
+						// 		getUserInfoById({
+						// 			params: {
+						// 				userId: $store.state.userInfo.id
+						// 			},
+						// 			custom: {
+						// 				toast: true,
+						// 				catch: true
+						// 			}
+						// 		}).then(res => {
+						// 			this.$store.dispatch("setUserInfo", res);
+						// 			if (res && res.userProfession == 9 || res.userProfession ==
+						// 				10 || res.userProfession == 11) {
+						// 				uni.navigateTo({
+						// 					url: '/pages/nucleic/employeePermit?userProfession=' +
+						// 						res.userProfession
+						// 				})
+						// 			} else {
+						// 				uni.navigateTo({
+						// 					url: '/pages/nucleic/permit'
+						// 				})
+						// 			}
+
+						// 		})
+
+						// 	})
+						// },
+					},
+					// {
+					// 	name: "出入登记",
+					// 	icon: 'https://qiniu.xzlglobal.com/hs/mp/icon_home22@2x.png',
+					// 	width: '84rpx',
+					// 	height: '80rpx',
+					// 	// path: "",
+					// 	async routerLink() {
+					// 		var that = this
+					// 		checkPass(() => {
+					// 			uni.scanCode({
+					// 				success(res) {
+					// 					console.log(res)
+					// 					if (res.result.indexOf("userInfo") >= 0) {
+					// 						const [_1, _2, userIdMD, _random] = res.result.split(
+					// 							'_');
+					// 						if (userIdMD) {
+					// 							// var userId = authcode(userIdMD, config.encryptKey,
+					// 							// 	'jiemi')
+
+					// 							let base64 = new Base64()
+					// 							var userId = base64.decode(userIdMD.toString())
+					// 							if (!isNaN(parseInt(userId))) {
+					// 								uni.navigateTo({
+					// 									url: '/pages/nucleic/familyPermit?scene=' +
+					// 										parseInt(userId)
+					// 								})
+					// 							} else {
+					// 								uni.showToast({
+					// 									title: '无效的二维码',
+					// 									icon: 'none'
+					// 								})
+					// 							}
+
+					// 						} else {
+					// 							uni.showToast({
+					// 								title: '无效的二维码',
+					// 								icon: 'none'
+					// 							})
+					// 						}
+
+
+					// 					} else {
+					// 						getUserInfoById({
+					// 							params: {
+					// 								userId: $store.state.userInfo.id
+					// 							},
+					// 							custom: {
+					// 								toast: true,
+					// 								catch: true
+					// 							}
+					// 						}).then(resUser => {
+					// 							that.$store.dispatch("setUserInfo",
+					// 								resUser);
+
+					// 							if (resUser && resUser.userProfession ==
+					// 								9 || resUser.userProfession == 10 ||
+					// 								resUser.userProfession == 11) {
+					// 								uni.navigateTo({
+					// 									url: '/pages/nucleic/employeePermit?source=scanCodeRegister&qrResult=' +
+					// 										res.result +
+					// 										'&userProfession=' +
+					// 										resUser.userProfession
+					// 								})
+					// 							} else {
+					// 								uni.navigateTo({
+					// 									url: '/pages/nucleic/permit?source=scanCodeRegister&qrResult=' +
+					// 										res.result
+					// 								})
+					// 							}
+
+					// 						})
+					// 					}
+
+
+					// 				},
+					// 				fail(err) {
+					// 					if (err.errMsg.indexOf('cancel') != -1) {
+					// 						return;
+					// 					}
+					// 					uni.showToast({
+					// 						title: '无效的二维码',
+					// 						icon: 'none'
+					// 					})
+					// 				}
+					// 			})
+					// 		})
+
+					// 	}
+					// },
+					{
+						name: "登记信息",
+						icon: 'https://qiniu.xzlglobal.com/hs/mp/icon_home33@2x.png',
+						width: '84rpx',
+						height: '80rpx',
+						path: "/pages/nucleic/registration-Inquiry",
+					},
+					{
+						name: "登记码",
+						icon: 'https://qiniu.xzlglobal.com/hs/mp/icon_home44@2x.png',
+						width: '84rpx',
+						height: '80rpx',
+						path: "/path/home/merchants",
+						async routerLink() {
+							try {
+								getMerchantInfo({
+									custom: {
+										toast: false,
+										catch: true
+									}
+								}).then(result => {
+									if (result.state === 'AGREE') {
+										uni.navigateTo({
+											url: '/pages/home/merchantsCard'
+										})
+									} else if (result.state === 'REQUEST') {
+										uni.navigateTo({
+											url: '/pages/nucleic/applylose?source=merchant'
+										})
+									} else if (result.state === 'REJECT') {
+										uni.navigateTo({
+											url: '/pages/nucleic/applyreject?source=merchants&reject=' +
+												result
+												.rejectReason
+										})
+									} else {
+										uni.navigateTo({
+											url: '/pages/home/merchants'
+										})
+									}
+								}).catch(err => {
+									uni.navigateTo({
+										url: '/pages/home/merchants'
+									})
+								});
+
+							} catch (error) {
+								uni.navigateTo({
+									url: '/pages/home/merchants'
+								})
+							}
+						},
+					},
+					{
+						name: "进东兴报备",
+						icon: 'https://qiniu.xzlglobal.com/hs/mp/icon_home55@2x.png',
+						top: 46,
+						width: '80rpx',
+						height: '82rpx',
+						// path: "/pages/nucleic/passSelect",
+						async routerLink() {
+							checkPasseported(() => {
+								uni.navigateTo({
+									url: '/pages/report-home/index?apply=true'
+								})
+							})
+						},
+					},
+					{
+						name: "出东兴报备",
+						icon: 'https://qiniu.xzlglobal.com/hs/mp/icon_home66@2x.png',
+						top: 46,
+						width: '78rpx',
+						height: '82rpx',
+						async routerLink() {
+							checkPasseported(() => {
+								uni.navigateTo({
+									url: '/pages/report-home/situation-report?apply=true'
+								})
+							})
+						},
+					},
+					{
+						name: "报备查询",
+						icon: 'https://qiniu.xzlglobal.com/hs/mp/icon_home77@2x.png',
+						width: '80rpx',
+						height: '80rpx',
+						async routerLink() {
+							checkPasseported(() => {
+								uni.navigateTo({
+									url: '/pages/report-home/search'
+								})
+							})
+						},
+					},
+				],
+				// reportList: [
+				// 	{
+				// 		name: "进东兴报备",
+				// 		icon: 'https://qiniu.xzlglobal.com/hs/mp/icon_home55@2x.png',
+				// 		top: 46,
+				// 		width: '80rpx',
+				// 		height: '82rpx',
+				// 		// path: "/pages/nucleic/passSelect",
+				// 		async routerLink() {
+				// 			checkPasseported(() => {
+				// 				uni.navigateTo({
+				// 					url: '/pages/report-home/index?apply=true'
+				// 				})
+				// 			})
+				// 		},
+				// 	},
+				// 	{
+				// 		name: "出东兴报备",
+				// 		icon: 'https://qiniu.xzlglobal.com/hs/mp/icon_home66@2x.png',
+				// 		top: 46,
+				// 		width: '78rpx',
+				// 		height: '82rpx',
+				// 		async routerLink() {
+				// 			checkPasseported(() => {
+				// 				uni.navigateTo({
+				// 					url: '/pages/report-home/situation-report?apply=true'
+				// 				})
+				// 			})
+				// 		},
+				// 	},
+				// 	{
+				// 		name: "报备查询",
+				// 		icon: 'https://qiniu.xzlglobal.com/hs/mp/icon_home77@2x.png',
+				// 		width: '80rpx',
+				// 		height: '80rpx',
+				// 		async routerLink() {
+				// 			checkPasseported(() => {
+				// 				uni.navigateTo({
+				// 					url: '/pages/report-home/search'
+				// 				})
+				// 			})
+				// 		},
+				// 	},
+				// ],
+				governmentList:[{
+					name: "社情民意反映",
+					icon: 'https://qiniu.xzlglobal.com/hs/mp/icon_zf1.png',
+					width: '80rpx',
+					height: '80rpx',
+					async routerLink() {
+						uni.showToast({
+							title: '开发中',
+							icon: 'none'
+						})
+					},
+				},
+				{
+					name: "党建引领",
+					icon: 'https://qiniu.xzlglobal.com/hs/mp/icon_zf2.png',
+					width: '80rpx',
+					height: '80rpx',
+					async routerLink() {
+						uni.showToast({
+							title: '开发中',
+							icon: 'none'
+						})
+					},
+				},
+				{
+					name: "网络工作平台",
+					icon: 'https://qiniu.xzlglobal.com/hs/mp/icon_zf3.png',
+					width: '80rpx',
+					height: '80rpx',
+					async routerLink() {
+						uni.showToast({
+							title: '开发中',
+							icon: 'none'
+						})
+					},
+				}],
+				
+				
+				partList: [{
+						name: "家人电子网格证",
+						icon: "https://qiniu.xzlglobal.com/hs/mp/icon_home3%402x.png",
+						top: 46,
+						width: '80rpx',
+						height: '72rpx',
+						// path: "/pages/nucleic/passSelect",
+						async routerLink() {
+							checkPasseported(() => {
+								uni.navigateTo({
+									url: '/pages/report-home/access'
+								})
+							})
+						},
+					},
+					{
+						name: "登记信息查询",
+						icon: "https://qiniu.xzlglobal.com/hs/mp/icon_home4%402x.png",
+						top: 42,
+						width: 82,
+						height: 80,
+						path: "/pages/nucleic/registration-Inquiry",
+					},
+					{
+						name: "进出东兴报备",
+						icon: "https://qiniu.xzlglobal.com/hs/mp/icon_home5%402x.png",
+						top: 38,
+						width: 86,
+						height: 86,
+						// path: "/pages/report-home/access",
+						async routerLink() {
+							checkPasseported(() => {
+								uni.navigateTo({
+									url: '/pages/report-home/access'
+								})
+							})
+						},
+					},
+					{
+						name: "公共场所登记码",
+						icon: "https://qiniu.xzlglobal.com/hs/mp/icon_home6%402x.png",
+						top: 54,
+						width: 86,
+						height: 74,
+						path: "/path/home/merchants",
+						async routerLink() {
+							try {
+								getMerchantInfo({
+									custom: {
+										toast: false,
+										catch: true
+									}
+								}).then(result => {
+									if (result.state === 'AGREE') {
+										uni.navigateTo({
+											url: '/pages/home/merchantsCard'
+										})
+									} else if (result.state === 'REQUEST') {
+										uni.navigateTo({
+											url: '/pages/nucleic/applylose?source=merchant'
+										})
+									} else if (result.state === 'REJECT') {
+										uni.navigateTo({
+											url: '/pages/nucleic/applyreject?source=merchants&reject=' +
+												result
+												.rejectReason
+										})
+									} else {
+										uni.navigateTo({
+											url: '/pages/home/merchants'
+										})
+									}
+								}).catch(err => {
+									uni.navigateTo({
+										url: '/pages/home/merchants'
+									})
+								});
+
+							} catch (error) {
+								uni.navigateTo({
+									url: '/pages/home/merchants'
+								})
+							}
+						},
+					},
+					{
+						name: "行程卡",
+						icon: "https://qiniu.xzlglobal.com/hs/mp/icon_home7%402x.png",
+						top: 44,
+						width: 92,
+						height: 90,
+						path: "",
+						routerLink() {
+							uni.navigateToMiniProgram({
+								appId: 'wx8f446acf8c4a85f5',
+							})
+							// wx.navigateToMiniProgram({appId:"wx28197fe0459851c7",path:"pages/index/index"})
+						}
+					},
+					{
+						name: "问题反馈",
+						icon: "https://qiniu.xzlglobal.com/hs/mp/icon_home8%402x.png",
+						top: 46,
+						width: 84,
+						height: 84,
+						path: "/pages/home/feedbackList",
+					},
+				],
+			};
+		},
+		// onShow() {},
+		computed: {
+			isLogin() {
+				const login = this.$store.state.isLogin;
+				return login; //这里返回vuex的state里的str数据
+			},
+			...mapState(['userInfo'])
+		},
+		onLoad(option) {
+			console.log(option)
+			const rect = uni.getMenuButtonBoundingClientRect()
+			this.titleBarHeight = rect.top + 'px';
+		},
+		async onShow() {
+			if(/s/.test(config.baseUrl.substr(0,5))){
+			}else{
+				this.$store.dispatch('setdebug', true)
+			}
+			if (this.$store.state.userInfo.id) {
+				this.userDetail = this.$store.state.userInfo;
+			}
+			let token = uni.getStorageSync("token")
+			if(!token){
+				wx.navigateTo({
+					url: '/pages/login/index',
+				})
+			}
+			wx.login({
+				success: (res) => {
+					if (res.code) {
+						//发起网络请求
+						console.log("获取用户成功！" + res.code);
+						this.checkLogin(res.code);
+					} else {
+						console.log("获取用户登录态失败！" + res.errMsg);
+					}
+				},
+			});
+			
+			
+		},
+		mounted() {
+			this.getList()
+		},
+		methods: {
+			//查询文章列表
+			getList(){
+				let param = {openStatue:1}
+				let that = this
+				if(this.currentIndex == 1){
+					sqmyList(param).then(res=>{
+						// console.log('111',res)
+						that.newsArrayList = res
+					})
+				}
+				
+			},
+			showConfirm() {
+				this.showNetwork = false
+			},
+			//查看网络
+			getNetwork() {
+				let self = this;
+				return new Promise((resolve, reject) => {
+					uni.getNetworkType({
+						success(res) {
+							const networkType = res.networkType;
+							console.log(res)
+							if (networkType === 'none') {
+								self.showNetwork = true
+								console.log('无网络，返回false')
+								reject(false)
+							} else {
+								console.log('有网络，返回true')
+								resolve(true)
+							}
+						}
+					})
+				})
+			},
+
+
+			//查看通知内容
+			checkMsg(item) {
+				uni.navigateTo({
+					url: "/pages/nucleic/notificationInfo?id=" + item.id,
+				});
+
+				console.log(item)
+			},
+
+			logout() {
+				this.unreadCount = 0;
+				this.$store.dispatch("setUserInfo", {});
+				this.$store.dispatch('setLoginStatus', false)
+				this.userDetail = {};
+				this.userName = '';
+				this.userNotices = [];
+			},
+			getUserInfo() {
+				getUserDetailInfo().then((res) => {
+					this.userDetail = res;
+					this.$store.dispatch("setUserInfo", res);
+					console.log('获取用户最新信息', res)
+					if(res && !res.avatar){
+						uni.showModal({
+							title: '头像补全提示',
+							content: '因当前账户未上传头像或头像不合格，为了便于出入核实信息，请重新上传头像',
+							confirmText: '去上传',
+							cancelText:'以后再说',
+							success: function (resCo) {
+								if (resCo.confirm) {
+									verifyAvatar().then(res => {
+										switch (res.permitAudit) {
+											case 0:
+												uni.navigateTo({
+													url: '/pages/nucleic/applylose'
+												})
+												break;
+											case 2:
+												uni.navigateTo({
+													url: '/pages/nucleic/applyreject?source=avatar&reject=' + res.rejectReason
+												})
+												break;
+											default:
+												uni.navigateTo({
+													url: '/pages/login/editAvator',
+												})
+												break;
+										}
+									})
+								} else if (res.cancel) {
+									console.log('用户点击取消');
+								}
+							}
+						});
+
+						
+					}
+					this.userName = res.name;
+				}).catch(err => {
+					if (err.code === 500) {
+						this.logout();
+					}
+				});
+			},
+			async getUserNoticePopup() {
+				// if (this.userNotices.length) return;
+				try {
+					const result = await userNoticePopup();
+					this.unreadCount = Number(result.unreadCount);
+					this.noticeDetail = result.userNotices.find(v => v.noticeType === 1);
+					this.userNotices = result.userNotices;
+				} catch (e) {
+					//TODO handle the exception
+				}
+			},
+			checkLogin(code) {
+				const tokenTime = uni.getStorageSync('tokenTime');
+				const now = new Date().getTime();
+				const diff = tokenTime ? now - tokenTime : 0;
+				if(!tokenTime || (diff > 6 * 24 * 60 * 60 * 1000)){
+					
+					log.info('刷新token')
+					checkLogin({
+						params: {
+							code: code
+						},
+						custom: {
+							toast: false,
+							catch: true
+						}
+					}).then((res) => {
+						if (res.token) {
+							uni.setStorageSync("token", res.token);
+							uni.setStorageSync("tokenTime", new Date().getTime());
+							this.$store.dispatch("setLoginStatus", true);
+							this.getUserInfo();
+							this.getUserNoticePopup();
+							// companyTree()
+						}
+					}).catch(err => {
+						log.info('首页-刷新token报错，错误信息：'+JSON.stringify(err))
+						if (err.code === 405) {
+							this.logout();
+						}
+						console.log('err', err)
+					});
+				}else{
+					this.$store.dispatch("setLoginStatus", true);
+					this.getUserInfo();
+					this.getUserNoticePopup();
+				}
+			},
+			topageIm(){
+				uni.navigateTo({
+					url:'../chat-list/chat-list'
+				})
+			},
+			//tab选择事件
+			change(e){
+				console.log(e)
+				this.currentIndex = e.index
+				this.getList()
+			},
+			toPages({
+				path,
+				routerLink
+			}) {
+				if (!this.$store.state.isLogin) {
+					uni.$u.toast('请先登录');
+					return
+				}
+				if (routerLink) {
+					routerLink.apply(this);
+				} else {
+					uni.navigateTo({
+						url: path,
+					});
+				}
+			},
+			async goDetail() {
+				let res = await this.getNetwork();
+				console.log(res)
+				if (res) {
+					if (this.isLogin) {
+						uni.navigateTo({
+							url: "/pages/login/userDetail",
+						});
+					} else {
+						uni.redirectTo({
+							url: "/pages/login/index",
+						});
+					}
+				}
+
+
+			},
+		},
+	};
+</script>
+<style>
+	page {
+		background: #f1f4f7;
+	}
+</style>
+<style lang="scss" scoped>
+	.home {
+		width: 100%;
+		overflow: hidden;
+	}
+    
+	.header {
+		// background-image: url("https://qiniu.xzlglobal.com/hs/mp/home_bg.png");
+		background-image: url("https://qiniu.xzlglobal.com/hs/mp/home_bg@2x.png");
+
+		background-size: 100%;
+		background-repeat: no-repeat;
+		width: 100%;
+		padding-top: var(--status-bar-height);
+		padding-bottom: 42upx;
+
+		// height: 200upx;
+		.title {
+			width: 500upx;
+			height: 50upx;
+			font-size: 36upx;
+			font-family: PingFangSC-Medium, PingFang SC;
+			font-weight: 500;
+			color: #ffffff;
+			line-height: 50upx;
+			margin: 0 0 54upx 40upx;
+			display: flex;
+			align-items: center;
+			flex-direction: initial;
+			justify-content:space-around;
+			image {
+				width: 50rpx;
+				height: 50rpx;
+				margin-right: 10rpx;
+				flex-shrink: 1;
+			}
+		}
+
+		.notice {
+			margin-left: 40upx;
+			position: relative;
+			height: 42upx;
+
+			// overflow: hidden;
+			.notice-menu {
+				width: 52rpx;
+				height: 52rpx;
+				position: absolute;
+				right: 30rpx;
+				transform: translate(0px,0px);
+				image {
+					width: 100%;
+					height: 100%;
+				}
+
+				.number {
+					position: absolute;
+					width: 38rpx;
+					height: 38rpx;
+					background: #F62E1C;
+					border-radius: 50%;
+					font-size: 23rpx;
+					text-align: center;
+					line-height: 38rpx;
+					right: -19rpx;
+					top: -19rpx;
+					color: #fff;
+				}
+			}
+
+			.icon {
+				display: inline-block;
+				font-size: 0;
+				width: 38upx;
+				height: 32upx;
+				margin-top: 5upx;
+			}
+
+			.info {
+				width: 544upx;
+				height: 42upx;
+				font-size: 30upx;
+				font-family: PingFangSC-Regular, PingFang SC;
+				font-weight: 400;
+				color: #ffffff;
+				line-height: 42upx;
+				display: inline-block;
+				white-space: nowrap;
+				overflow: hidden;
+				text-overflow: ellipsis;
+				position: absolute;
+				left: 54upx;
+				top: 0;
+
+				.swiper-item {
+					height: 42upx;
+				}
+			}
+		}
+
+		.login {
+			// padding: 40upx 40upx 20upx 40upx;
+			width: 100%;
+			height: 120upx;
+			box-sizing: border-box;
+			padding: 20upx 21upx 20upx 52upx;
+			background: #ffffff;
+			border-radius: 16upx;
+			margin: 36upx auto 0;
+			position: relative;
+
+			.wx-logo {
+				width: 80upx;
+				height: 80upx;
+				display: block;
+				border-radius: 50%;
+			}
+
+			p {
+				height: 80upx;
+				font-size: 16px;
+				font-family: PingFangSC-Medium, PingFang SC;
+				font-weight: 500;
+				color: #333333;
+				line-height: 80upx;
+				position: absolute;
+				left: 160upx;
+			}
+
+			.to-user-info {
+				width: 16upx;
+				height: 28upx;
+				display: block;
+				position: absolute;
+				right: 42upx;
+				top: 46upx;
+			}
+		}
+	}
+
+	.options {
+
+		padding: 15upx 40upx 20upx 40upx;
+		width: 100%;
+
+		// background: #f1f4f7;
+		// overflow: hidden;
+		// display: flex;
+		// flex-direction: row;
+		// flex-wrap: wrap;
+		// justify-content: space-between;
+        
+		.option-grid {
+			
+			border-radius: 8px;
+			margin-bottom: 40rpx;
+			background-color: #3E76F1;
+			// background: #ffffff;
+			box-shadow: 0px 0px 10px 0px rgba(0, 0, 0, 0.1);
+			.content{
+				border-bottom-left-radius: 8px;
+				border-bottom-right-radius: 8px;
+				padding: 30rpx 20rpx;
+				margin-top: 18rpx;
+				background: #ffffff;
+                /deep/ .u-line{
+					margin-top: 10rpx;
+				}
+				.title-grid {
+					font-weight: 600;
+					color: #000000;
+					font-size: 32rpx;
+				    // border:none;
+					border-left:3px solid #3E76F1;
+					padding: 0 20rpx 10rpx 20rpx;
+				}
+				.title_spegrid{
+					display: flex;
+					justify-content: space-between;
+					flex-direction: row;
+				}
+				.grid-text {
+					color: #17233D;
+					font-size: 32rpx;
+					margin-top: 20rpx;
+				}
+				/deep/ .u-tabs__wrapper__nav__item {
+                    width: 33.33%;
+                    padding: 0;
+                }
+				.grid-img {
+					// border: 30rpx solid #F7F7F7;
+					// background-color: #F7F7F7;
+					border-radius: 20rpx;
+					margin-top: 20rpx;
+				}
+				
+			}
+			.bottom_item{
+				background-color: #fff;
+				border-radius:10upx;
+				margin-bottom: 20upx;
+			}
+			
+		}
+		.options_special_grid{
+			background-color: transparent !important;
+			.content{
+				margin-top: 0;
+			}
+		}
+		.option {
+			width: 310upx;
+			height: 220upx;
+			background: #ffffff;
+			box-shadow: 0px 0px 10px 0px rgba(0, 0, 0, 0.1);
+			border-radius: 8px;
+			margin: 0 0 20upx 0;
+			position: relative;
+		}
+
+		.tag {
+			width: 156upx;
+			height: 48upx;
+			background: #2d6ef1;
+			border-radius: 16upx 0px 16upx 0px;
+			position: absolute;
+			left: 0;
+			top: 0;
+			font-size: 28upx;
+			font-family: PingFangSC-Regular, PingFang SC;
+			font-weight: 400;
+			color: #ffffff;
+			line-height: 48upx;
+			text-align: center;
+		}
+
+		.logo_icon {
+			height: auto;
+			display: block;
+			position: absolute;
+			left: 50%;
+			transform: translateX(-50%);
+		}
+
+		.name {
+			width: 100%;
+			font-size: 32upx;
+			font-family: PingFangSC-Medium, PingFang SC;
+			font-weight: 500;
+			color: #333333;
+			line-height: 44upx;
+			position: absolute;
+			text-align: center;
+			bottom: 28upx;
+		}
+	}
+	.main_tips{
+		display: flex;
+		width: 100%;
+		box-sizing: border-box;
+		background-color: #fff;
+		padding: 14upx;
+		border-radius: 16upx;
+		flex-direction: row;
+		align-items: center;
+		justify-content: space-between;
+		margin-bottom: 20upx;
+		font-weight: 600;
+		image{
+			width: 68upx;
+			height: 68upx;
+		}
+		text{
+			font-size: 28upx;
+			color: #000000;
+		}
+		.attention{
+			background: #0e59a3;
+			color: #fff;
+			width: 116upx;
+			height: 74upx;
+			font-size: 28upx;
+			
+			border-radius: 8upx;
+			line-height: 74upx;
+			text-align: center;
+		}
+	}
+</style>

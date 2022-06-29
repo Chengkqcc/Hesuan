@@ -1,0 +1,897 @@
+<template>
+	<view :class="url != null && url != ''? 'fixed_div':''">
+		<KpsImageCutter v-if="url != null && url != ''" @ok="onok" @cancel="oncancle" :url="url" :fixed="true"
+			:width="400" :height="400">
+		</KpsImageCutter>
+		<view style="padding: 20rpx;">
+			<view class="padding">
+				<u-button type="primary" @click="onUpload" :plain="true" text="身份证识别"></u-button>
+			</view>
+		</view>
+		<view class="form">
+
+			<u--form labelWidth="170rpx" :labelStyle="{ color: '#333', fontSize: '31rpx' }" labelPosition="left"
+				:model="form" ref="form1">
+				<u-form-item label="本人头像" prop="form.avatar" borderBottom ref="item1">
+					<view @click="chooseImage"
+						style="display: flex;justify-content: space-between;align-items: center;flex-direction: row;">
+						<image style="width: 120rpx; height: 120rpx;border-radius: 50%;" :src="form.avatar" />
+						<u-icon name="arrow-right"></u-icon>
+					</view>
+				</u-form-item>
+				<u-form-item label="姓名" prop="form.name" borderBottom>
+					<u--input v-model="form.name" border="none" placeholder="请输入姓名" fontSize='31rpx'></u--input>
+				</u-form-item>
+				<u-form-item label="证件类型" prop="form._documentType" borderBottom @click="cardTypeActionShow = true">
+					<u--input v-model="form._documentType" disabled disabledColor="#fff" fontSize='31rpx'
+						suffixIcon="arrow-right" suffixIconStyle="opacity:0.6" border="none" placeholder="请选择证件类型">
+					</u--input>
+				</u-form-item>
+				<u-action-sheet :closeOnClickOverlay="true" :closeOnClickAction="true" :actions="cardTypeActionList"
+					title="证件类型" @select="selectAction($event, 'documentType')" @close="cardTypeActionShow = false"
+					:show="cardTypeActionShow"></u-action-sheet>
+				<u-form-item label="证件号码" prop="form.idNumber" borderBottom>
+					<u--input v-model="form.idNumber" border="none" fontSize='31rpx' placeholder="请输入证件号码"></u--input>
+				</u-form-item>
+				<u-form-item label="性别" prop="form._sex" borderBottom @click="genderActionShow = true">
+					<u--input v-model="form._sex" border="none" fontSize='31rpx' disabled disabledColor="#fff"
+						suffixIcon="arrow-right" suffixIconStyle="opacity:0.6" placeholder="请选择性别"></u--input>
+				</u-form-item>
+				<u-action-sheet :closeOnClickOverlay="true" :closeOnClickAction="true" :actions="genderActionList"
+					title="性别" @select="selectAction($event, 'sex')" @close="genderActionShow = false"
+					:show="genderActionShow"></u-action-sheet>
+				<u-form-item label="生日" prop="form.birthday" borderBottom @click="dateActionShow = true">
+					<u--input v-model="form.birthday" border="none" disabled fontSize='31rpx' disabledColor="#fff"
+						suffixIcon="arrow-right" suffixIconStyle="opacity:0.6" placeholder="请选择生日"></u--input>
+				</u-form-item>
+
+				<u-form-item label="户籍类型" prop="form._userCensus" borderBottom @click="householdActionShow = true">
+					<u--input v-model="form._userCensus" border="none" fontSize='31rpx' disabled disabledColor="#fff"
+						suffixIcon="arrow-right" suffixIconStyle="opacity:0.6" placeholder="请选择户籍类型"></u--input>
+				</u-form-item>
+
+				<u-action-sheet :closeOnClickOverlay="true" :closeOnClickAction="true" :actions="householdActionList"
+					title="户籍类型" @select="selectAction($event, 'household')" @close="householdActionShow = false"
+					:show="householdActionShow"></u-action-sheet>
+				<u-form-item label="人员类型" prop="form._userProfession" borderBottom @click="jobActionShow = true">
+					<u--input v-model="form._userProfession" border="none" disabled fontSize='31rpx'
+						disabledColor="#fff" suffixIcon="arrow-right" suffixIconStyle="opacity:0.6"
+						placeholder="请选择人员类型"></u--input>
+				</u-form-item>
+				<u-picker :show="jobActionShow" title='人员类型' :columns="[jobActionList]" keyName="name"
+					:immediateChange='true' @close="jobActionShow = false;" @cancel="jobActionShow = false;"
+					@confirm='user_enter_purposeSelect'>
+				</u-picker>
+
+
+				<u-form-item label="申请类型" prop="form._userProfession" borderBottom ref="item1"
+					@click="apply_TypeShow = true">
+					<u--input v-model="form._applyType" border="none" disabled fontSize='31rpx' disabledColor="#fff"
+						suffixIcon="arrow-right" suffixIconStyle="opacity:0.6" placeholder="请选择居住类型"></u--input>
+				</u-form-item>
+				<u-action-sheet :closeOnClickOverlay="true" :closeOnClickAction="true" :actions="apply_Type"
+					title="申请类型" @select="selectAction($event, 'applyType')" @close="apply_TypeShow = false"
+					:show="apply_TypeShow"></u-action-sheet>
+
+				<u-form-item v-if="form.applyType ==='1'||form.applyType==='2' " label="社区/网格"
+					prop="form._userProfession" borderBottom ref="item1">
+					<uni-data-picker :localdata="deptTreeTemporary" placeholder="点击选择社区/网格" popup-title="请选择社区/网格"
+						v-model="form.companyId" :clear-icon='false' :map="{text:'label',value:'id'}"
+						@change="bindPickerChange">
+					</uni-data-picker>
+				</u-form-item>
+
+				<u-form-item v-if="form.applyType ==='3'" label="社区/网格" prop="form._userProfession" borderBottom
+					ref="item1">
+					<uni-data-picker :localdata="deptTree" placeholder="点击选择社区/网格" popup-title="请选择社区/网格"
+						v-model="form.companyId" :clear-icon='false' :map="{text:'label',value:'id'}"
+						@change="bindPickerChange">
+					</uni-data-picker>
+				</u-form-item>
+
+
+
+				<u-datetime-picker :show="dateActionShow" :value="birthDate" mode="date" :minDate="minDateTime"
+					:maxDate="maxDateTime" @confirm="birthDateConfirm" closeOnClickOverlay @cancel="birthDateClose"
+					@close="birthDateClose"></u-datetime-picker>
+
+
+				<u-form-item prop="form.addr" borderBottom>
+					<view class="form-item-textarea">
+						<view class="_label">
+							<view>现居住地址</view>
+							<view>(必填)</view>
+						</view>
+						<view class="_content">
+							<u--textarea v-model="form.addr" fontSize='31rpx' count placeholder="请输入社区+街道+小区+房号">
+							</u--textarea>
+						</view>
+					</view>
+				</u-form-item>
+				<u-form-item prop="form.registerAddr" borderBottom>
+					<view class="form-item-textarea">
+						<view class="_label">
+							<view>户籍地址</view>
+							<view>(必填)</view>
+						</view>
+						<view class="_content">
+							<u--textarea v-model="form.registerAddr" count placeholder="请输入身份证正面中的住址信息"></u--textarea>
+						</view>
+					</view>
+				</u-form-item>
+				<u-form-item label="手机号" prop="form.phone" borderBottom>
+					<u--input v-model="form.phone" border="none" fontSize='31rpx' placeholder="请输入手机号"></u--input>
+				</u-form-item>
+				<u-form-item label="验证码" prop="code" borderBottom>
+					<u--input v-model="form.code" border="none" type='number' :maxlength='6' placeholder="请填写验证码">
+					</u--input>
+					<u-button slot="right" @tap="getCode" :text="tips" type="success" size="mini" :disabled="disabled1">
+					</u-button>
+				</u-form-item>
+			</u--form>
+		</view>
+		<PromiseComponent v-model="isPromise" inStyle='margin-top:30rpx;' />
+		<view style="display: flex;justify-content: center;align-items: center;flex-direction: row;">
+			<button class="submit" @click="submit">添加</button>
+		</view>
+
+		<view style="height:60rpx;"></view>
+		<u-code ref="uCode" @change="codeChange" seconds="90" @start="disabled1 = true" @end="disabled1 = false">
+		</u-code>
+		<WarnEditHeadimg :show='warnEditHeadImg' @confirm='warnEditHeadImgConfirm' @cancel='warnEditHeadImg = false' />
+		<u-loading-page :loadingText="loadingPageData.loadingText" :image="loadingPageData.image"
+			:loadingMode="loadingPageData.loadingMode" :bgColor="loadingPageData.bgColor" :loading="loading"
+			:color="loadingPageData.color" :loadingColor="loadingPageData.loadingColor">
+		</u-loading-page>
+	</view>
+</template>
+<script>
+	import config from "@/common/config";
+	import {
+		getUploadToken,
+		getCardDetail,
+		userApply,
+		register,
+		getOpenId,
+		deptTreeselectNotToken,
+		sendSms,
+		verifySms
+	} from "@/common/api.js";
+	import {
+		getDictType
+	} from "@/common/api";
+	import PromiseComponent from '@/components/promise.vue'
+	import {
+		checkPhone,
+		checkLicensePlate,
+		checkIdNo
+	} from "@/util/regext";
+	import KpsImageCutter from "@/components/ksp-image-cutter/ksp-image-cutter.vue";
+	import WarnEditHeadimg from '@/components/warnEditHeadImg.vue'
+
+	function toast(title) {
+		uni.showToast({
+			title,
+			icon: "none",
+		});
+	}
+	const DefaultHeadImage = 'https://qiniu.xzlglobal.com/FnXkGW7ZrH5skQxGCxAUqZJ52S4p';
+	export default {
+		components: {
+			PromiseComponent,
+			KpsImageCutter,
+			WarnEditHeadimg
+		},
+		data() {
+			return {
+				loading:false,
+				loadingPageData: {
+					// 自定义提示内容
+					loadingText: '加载中',
+					// 自定义图片
+					image: '',
+					// 自定义加载动画模式
+					loadingMode: 'spinner',
+					// 自定义背景色
+					bgColor: 'rgba(0, 0, 0, 0.4)',
+					color:'#eee'
+				},
+				warnEditHeadImg: false,
+				apply_Type: [],
+				deptTreeTemporary: [],
+				apply_TypeShow: false,
+				area: [],
+				deptTree: [],
+				fileList: [],
+				isPromise: false,
+				dateActionShow: false,
+				cardTypeActionShow: false,
+				genderActionShow: false,
+				genderActionList: [],
+				householdActionList: [],
+				householdActionShow: false,
+				jobActionList: [],
+				jobActionShow: false,
+				cardTypeActionList: [],
+				birthDate: Number(new Date()),
+				maxDateTime: new Date().getTime(),
+				minDateTime: new Date("1920-01-01").getTime(),
+				communityActionShow: false,
+				communityColumns: [
+					[],
+					[],
+					[]
+				],
+				residenceActionShow: false,
+				residenceActionList: [],
+				companyId: [],
+				companyName: [],
+				companyNameInputShowContent: '',
+				url: '',
+				openId: '',
+				disabled1: false,
+				tips: '获取验证码',
+				form: {
+					name: "",
+					phone: "",
+					companyId: "",
+					companyName: "",
+					documentType: "",
+					_documentType: "",
+					idNumber: "",
+					residenceType: '',
+					_residenceType: '',
+					sex: "",
+					_sex: "",
+					birthday: "",
+					_birthday: "",
+					userCensus: "",
+					_userCensus: "",
+					userProfession: "",
+					_userProfession: "",
+					addr: "",
+					code: "",
+					registerAddr: "",
+					applyType: '',
+					_applyType: '',
+					avatar: DefaultHeadImage
+				},
+			};
+		},
+		watch: {
+			"form._birthday"(time) {
+				const timeFormat = uni.$u.timeFormat;
+				this.form.birthday = timeFormat(time, "yyyy-mm-dd");
+			},
+
+		},
+		async onLoad() {
+			this.loading = true
+			await this.load();
+			this.loading = false
+			wx.login({
+				success: (res) => {
+					if (res.code) {
+						//发起网络请求
+						console.log('获取用户成功！' + res.code)
+						this.getOpenId(res.code)
+					} else {
+						console.log('获取用户登录态失败！' + res.errMsg)
+					}
+				}
+			});
+			
+			this.selectAction({
+				name: '身份证',
+				dictValue: '1'
+			}, 'documentType')
+			this.selectAction({
+				dictValue: '1',
+				name: '本地居住(有固定住所,包括长短租)'
+			}, 'residence')
+		},
+		methods: {
+			//获取用户信息
+			async getOpenId(code) {
+				var that = this
+				uni.showLoading({
+					title: '数据获取中...',
+					mask: true
+				});
+				await getOpenId(code).then(res => {
+					if (res && JSON.stringify(res) !== "{}") {
+						that.openId = res
+						uni.setStorageSync('openId', res);
+					}
+				})
+			},
+			async load() {
+				await Promise.all([
+					getDictType("user_profession"),
+					getDictType("user_census"),
+					getDictType("sys_user_sex"),
+					getDictType("document_type"),
+					getDictType("residence_type"),
+					getDictType('apply_type'),
+					deptTreeselectNotToken()
+				]).then(([job, household, sex, document, residence, apply, dept]) => {
+					this.householdActionList = household.map((v) => ({
+						...v,
+						name: v.dictLabel,
+					}));
+					this.jobActionList = job.map((v) => ({
+						...v,
+						name: v.dictLabel
+					}));
+					this.jobActionList = this.jobActionList.filter(v => v.dictValue != '9' && v.dictValue !=
+						'10' && v
+						.dictValue != '11'
+					);
+					this.apply_Type = apply.map((v) => ({
+						...v,
+						name: v.dictLabel,
+						value: v.dictValue,
+						text: v.dictLabel
+					}));
+					this.genderActionList = sex.map((v) => ({
+						...v,
+						name: v.dictLabel
+					}));
+					this.cardTypeActionList = document.map((v) => ({
+						...v,
+						name: v.dictLabel,
+					}));
+
+					this.residenceActionList = residence.map((v) => ({
+						...v,
+						name: v.dictLabel
+					}));
+					let copyObj = JSON.parse(JSON.stringify(dept.children))
+					dept = dept.children
+					this.deptTree = dept.filter(v => v.id != 377 && v.id != 382 && v.id != 386 &&
+						v.id != 437 && v.id != 438 && v.id != 439
+					);
+					this.deptTree.forEach(item => {
+						if (item.children) {
+							var data = item.children
+							item.children = data.filter(v => v.id != 494 && v.id != 495 && v.id !=
+								436);
+						}
+					})
+					this.deptTreeTemporary = copyObj.filter(v => v.id != 377 && v.id != 382 && v.id != 386 &&
+						v.id != 437 && v.id != 438 && v.id != 439
+					);
+					this.deptTreeTemporary.forEach(item => {
+						if (item.children) {
+							var data = item.children
+							item.children = data.filter(v => v.id == 494 || v.id == 495 || v.id ==
+								436);
+						}
+					})
+
+				});
+			},
+
+
+
+			//更改申请类型
+			applyTypeChange() {
+				this.form.companyName = ''
+				this.form.companyId = ''
+			},
+			/* 上传 */
+			onUpload() {
+				var that = this
+				var resultRes = ''
+				wx.chooseImage({ // 使用微信的方法进入聊天界面选择你之前接受过的文件
+					sizeType: ['original', 'compressed'], // 可以指定是原图还是压缩图，默认二者都有
+					sourceType: ['album', 'camera'], // 可以指定来源是相册还是相机，默认二者都有
+					count: 1, // 最多可以选择的文件个数，可以 0～100
+					//type: 'file', // 所选的文件的类型，其它属性可以看官方文档
+					success(res) {
+						console.log('选择文件' + res)
+						that.uploadImg(res)
+					},
+					fail(error) {
+						console.log("选择文件失败", error)
+					}
+				})
+
+			},
+
+			async uploadImg(resultRes) {
+				await this.getQiniuToken();
+				var result = await this.uploadFilePromise(resultRes.tempFiles[0].path, resultRes.tempFiles[0]
+					.name)
+				this.getCardDetail(result)
+			},
+			bindPickerChange(val) {
+				const list = val.detail.value.filter(v => v);
+				var companyName = []
+				for (let i = 0; i < list.length; i++) {
+					companyName.push(list[i].text)
+				}
+				this.form.companyName = companyName ? companyName.join('/') : ""
+
+			},
+
+			onnodeclick(node) {},
+			codeChange(text) {
+				this.tips = text;
+			},
+			getCode() {
+				var phone = this.form.phone
+				var message = ''
+				if (!checkPhone(phone))
+					message = '手机号码格式不正确'
+				if (!phone) message = '请输入手机号码'
+
+				if (message) {
+					uni.$u.toast(message);
+					return false
+				}
+
+				if (this.$refs.uCode.canGetCode) {
+					// 模拟向后端请求验证码
+					uni.showLoading({
+						title: '正在获取验证码'
+					})
+					var param = {
+						phone: phone,
+						scene: '待申请'
+					}
+					sendSms({
+						params: param,
+						custom: {
+							toast: true,
+							catch: true
+						}
+					}).then(res => {
+						uni.hideLoading();
+						// 这里此提示会被this.start()方法中的提示覆盖
+						uni.$u.toast('验证码已发送');
+						// 通知验证码组件内部开始倒计时
+						this.$refs.uCode.start();
+					}).catch(err => {
+						// uni.hideLoading();
+					})
+				} else {
+					uni.$u.toast('倒计时结束后再发送');
+				}
+			},
+			async onok(ev) {
+				this.url = ""; //隐藏组件
+				try {
+					await this.getQiniuToken();
+					const result = await this.uploadFilePromise(ev.path);
+					this.form.avatar = result;
+				} catch (error) {
+					toast(typeof error === "string" ? error : "请求出错");
+				}
+			},
+			oncancle() {
+				this.url = "";
+			},
+			warnEditHeadImgConfirm() {
+				this.warnEditHeadImg = false;
+				this.chooseImage()
+			},
+			chooseImage() {
+				if (!this._warnEditHeadImg) {
+					this._warnEditHeadImg = true;
+					return this.warnEditHeadImg = true;
+				}
+				uni.chooseImage({
+					count: 1,
+					success: res => {
+						// await this.getQiniuToken();
+						// const result = await this.uploadFilePromise(res.tempFilePaths[0]);
+						this.url = res.tempFilePaths[0];
+					}
+				})
+			},
+			user_enter_purposeSelect(info) {
+				console.log(info)
+				this.jobActionShow = false
+				this.form.userProfession = info.value[0].dictValue;
+				this.form._userProfession = info.value[0].name;
+			},
+			selectAction(res, type) {
+				const table = {
+					documentType: "documentType",
+					sex: "sex",
+					household: "userCensus",
+					job: "userProfession",
+					residence: "residenceType",
+					applyType: 'applyType'
+				};
+				const key = table[type];
+				this.form[key] = res.dictValue;
+				this.form[`_${key}`] = res.name;
+				this.cardTypeActionShow = false;
+				this.genderActionShow = false;
+				this.householdActionShow = false;
+				this.jobActionShow = false;
+				this.residenceActionShow = false;
+				if (type == 'applyType') {
+					this.applyTypeChange()
+				}
+			},
+			async getQiniuToken() {
+				//获取七牛的uptoken
+				return new Promise((resolve, reject) => {
+					getUploadToken()
+						.then((res) => {
+							if (res && JSON.stringify(res) !== "{}") {
+								this.qiniuToken = res;
+								resolve(res);
+							}
+						})
+						.catch((err) => reject("获取上传凭证出错"));
+				});
+			},
+
+			uploadFilePromise(url, name) {
+				var that = this;
+				return new Promise((resolve, reject) => {
+					let a = uni.uploadFile({
+						url: "https://upload-z1.qiniup.com/",
+						// url: config.baseUrl + '/wechat/common/upload',
+						filePath: url,
+						name: "file",
+						formData: {
+							token: that.qiniuToken,
+						},
+						success: (res) => {
+							if (res.data) {
+								var imgData = JSON.parse(res.data);
+								resolve(config.qiniuUrl + imgData.key);
+							} else {
+								reject();
+							}
+						},
+					});
+				});
+			},
+			async afterRead(event) {
+				var that = this
+				// uni.showLoading({});
+				try {
+					await this.getQiniuToken();
+					const result = await this.uploadFilePromise(event.file[0].url);
+					this.fileList.push({
+						...event.file[0],
+						url: result,
+						thumb: result,
+					});
+					this.getCardDetail(result)
+				} catch (e) {
+					uni.hideLoading();
+				}
+
+
+			},
+
+			async getCardDetail(url) {
+				var that = this
+
+				uni.showLoading({
+					title: '身份证识别中...',
+					mask: true
+				});
+				await getCardDetail({
+					url: url
+				}, {
+					custom: {
+						toast: true,
+						catch: true
+					}
+				}).then(cardInfo => {
+					uni.hideLoading();
+					if (cardInfo) {
+						that.form.name = cardInfo.name;
+						that.form.idNumber = cardInfo.idNumber;
+						// const [year, month, day] = cardInfo.birthDate.split(/[年月日]/);
+						// if (year) {
+						// 	this.form._birthday = +new Date(year, month, day);
+						// 	this.form.birthday = `${year}年${month}月${day}日`;
+						// }
+						that.form.birthday = cardInfo.birthDate.replace('年', '-').replace('月', '-')
+							.replace('日', '')
+						that.form.birthday = uni.$u.timeFormat(that.form.birthday, 'yyyy-mm-dd')
+						that.birthDate = Number(new Date(that.form.birthday))
+						const documentType = that.cardTypeActionList.find(
+							(v) => v.dictLabel == "身份证"
+						);
+						that.form._documentType = documentType.dictLabel;
+						that.form.documentType = documentType.dictValue;
+						const sex = that.genderActionList.find(
+							(v) => v.dictLabel == cardInfo.sex
+						);
+						if (sex) {
+							that.form._sex = sex.dictLabel;
+							that.form.sex = sex.dictValue;
+						}
+						that.form.registerAddr = cardInfo.address;
+						console.log(cardInfo);
+					}
+				}).catch(err => {
+					uni.hideLoading();
+				})
+
+			},
+			birthDateClose() {
+				this.dateActionShow = false
+			},
+			birthDateConfirm(e) {
+				this.dateActionShow = false
+				this.form.birthday = uni.$u.timeFormat(e.value, 'yyyy-mm-dd')
+			},
+			hideKeyboard() {
+				uni.hideKeyboard()
+			},
+			async submit() {
+				var that = this
+				if (this.form.avatar == DefaultHeadImage) {
+					return toast("请上传头像");
+				}
+				if (!this.form.name) {
+					return toast("请输入姓名");
+				}
+				if (!this.form.userCensus) {
+					return toast("请选择户籍类型");
+				}
+				if (!this.form.userProfession) {
+					return toast("请选择人员类型");
+				}
+				if (!this.form.applyType) {
+					return toast("请选择申请类型");
+				}
+
+				if (!this.form.companyId && !this.form.companyName) {
+					return toast("请选择社区/网格");
+				}
+
+				if (!this.form.documentType) {
+					return toast("请选择证件类型");
+				}
+				if (!this.form.idNumber) {
+					return toast("请输入证件号");
+				}
+				if (this.form.documentType === "1" && !checkIdNo(this.form.idNumber)) {
+					return toast("身份证号格式不正确");
+				} else if (!uni.$u.test.enOrNum(this.form.idNumber)) {
+					return toast("证号格式不正确");
+				}
+				if (!this.form.sex) {
+					return toast("请选择性别");
+				}
+				if (!this.form.birthday) {
+					return toast("请选择生日");
+				}
+
+
+				if (!this.form.addr) {
+					return toast("请输入现居住地址");
+				} else {
+					var addr = this.form.addr.replace(/\s+/g, "");
+					if (addr.length < 9) {
+						return toast("现居住地址不低于9个字符");
+					}
+				}
+
+				if (!this.form.registerAddr) {
+					return toast("请输入户籍地址");
+				}
+				if (!this.form.phone) {
+					return toast("请输入手机号");
+				}
+				if (!checkPhone(this.form.phone)) {
+					return toast("手机号格式不正确");
+				}
+				if (!this.form.code) {
+					return toast("请输入验证码");
+				}
+				if (!this.isPromise) {
+					return toast('请同意个人承诺书')
+				}
+				
+				if (!this.openId) {
+					return toast("用户openid获取失败，请保持网络正常后退出后重试");
+				}
+				const form = {
+					...this.form,
+				};
+
+
+				delete form._sex;
+				delete form._documentType;
+				delete form._userProfession;
+				delete form._userCensus;
+				delete form._residenceType;
+				delete form._birthday;
+				//添加质问框 要求用户仔细查看证件号和姓名是否正确
+				uni.showModal({
+					title: '信息确认提示',
+					content: '请确认信息姓名：《'+form.name +'》证件号码：《'+form.idNumber+"》是否正确？",
+					success: function (resCo) {
+						if (resCo.confirm) {
+							console.log('用户点击确定');
+							uni.showLoading({
+								title: '加载中...',
+								mask: true
+							});
+							try {
+								var param = {
+									phone: that.form.phone,
+									scene: '待申请',
+									code: that.form.code
+								}
+								verifySms({
+									params: param,
+									custom: {
+										toast: true,
+										catch: true
+									}
+								}).then(ress => {
+									uni.showLoading({
+										title: '加载中...',
+										mask: true
+									});
+									const params = {
+										openId: that.openId,
+										documentType: that.form.documentType ? that.form.documentType : 1,
+										idNumber: that.form.idNumber,
+										name: that.form.name,
+										phone: that.form.phone,
+										avatar:that.form.avatar,
+										registerAddr: that.form.address,
+										sex: that.form.sex,
+										birthday: that.form.birthday
+									}
+									register(params, {
+										custom: {
+											toast: true,
+											catch: true
+										}
+									}).then(resre => {
+										uni.setStorageSync('token', resre.token)
+										that.$store.dispatch('setLoginStatus', true);
+										uni.showLoading({
+											title: '加载中...',
+											mask: true
+										});
+										var dataForm = JSON.parse(JSON.stringify(form))
+										dataForm.idNumber = ""
+										userApply(dataForm, {
+											custom: {
+												toast: true,
+												catch: true
+											}
+										}).then(res => {
+											uni.showToast({
+												title: "注册成功",
+												icon: "success",
+												mask: true,
+											});
+											setTimeout(() => {
+												uni.reLaunch({
+													url: '/pages/main/index',
+												})
+											}, 1500)
+										}).catch(err => {
+											console.log(err)
+											setTimeout(() => {
+												uni.reLaunch({
+													url: '/pages/main/index',
+												})
+											}, 1500)
+										})
+									}).catch(err => {
+										if (err.code === 201) {
+											uni.redirectTo({
+												url: '/pages/login/index',
+											})
+										}
+									})
+								}).catch(err => {
+									console.log(err)
+								})
+							} catch (e) {
+								toast(e.msg || "申请出错");
+							}
+						} else if (resCo.cancel) {
+							console.log('用户点击取消');
+						}
+					}
+				});
+				
+
+				
+			},
+			getChildren(list, id, returnValue = []) {
+				var data = {}
+				for (let i in list) {
+					if (id == list[i].id) {
+						data = list[i]
+						break
+					}
+					//把元素都存入returnValue
+					returnValue.push(list[i])
+					if (list[i].children) {
+						this.getChildren(list[i].children, id, returnValue)
+					}
+				}
+				return data
+			}
+		},
+	};
+</script>
+<style>
+	page {
+		background: #f1f4f7;
+	}
+</style>
+<style lang="scss" scoped>
+	.tip {
+		color: #da0303;
+		font-size: 29rpx;
+		line-height: 42rpx;
+		margin-top: 29rpx;
+		text-align: center;
+	}
+
+	.upload-group {
+		width: 625rpx;
+		height: 388rpx;
+		margin: 29rpx auto 0;
+
+		.upload-img {
+			width: 625rpx;
+			height: 388rpx;
+		}
+	}
+
+	.form {
+		background: #fff;
+		padding: 0 44rpx;
+		// margin-top: 42rpx;
+	}
+
+	.form-item-textarea {
+		display: flex;
+		padding-bottom: 30rpx;
+
+		._label {
+			width: 170rpx;
+			font-size: 31rpx;
+			color: #333;
+
+			view:last-child {
+				color: #dd1c1c;
+				text-indent: 10rpx;
+			}
+		}
+
+		._content {
+			flex: 1;
+		}
+	}
+
+	button.submit {
+		margin-top: 18rpx;
+		width: 625rpx;
+		height: 92rpx;
+		background: #3a8cf0;
+		border-radius: 8rpx;
+		text-align: center;
+		color: #fff;
+		font-size: 33rpx;
+		// margin-bottom: 100rpx;
+	}
+
+	.fixed_div {
+		position: fixed;
+		width: 100%;
+	}
+</style>

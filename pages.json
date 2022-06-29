@@ -1,0 +1,882 @@
+{
+
+	"pages": [ //pages数组中第一项表示应用启动页，参考：https://uniapp.dcloud.io/collocation/pages
+		{
+			"path": "pages/main/index",
+			"style": {
+				"navigationStyle": "custom" //禁用uni-app默认的头部导航
+			}
+		},
+		{
+			"path": "pages/jyxc/jyxc",
+			"style": {
+				"navigationBarTitleText": "社情民意"
+				// "navigationStyle": "custom" //禁用uni-app默认的头部导航
+			}
+		},
+		{
+			"path": "pages/jyxc/feedback",
+			"style": {
+				"navigationBarTitleText": "问题反馈"
+				// "navigationStyle": "custom" //禁用uni-app默认的头部导航
+			}
+		},
+		{
+			"path": "pages/chat-list/chat-list",
+			"style": {
+				"navigationBarTitleText": "会话列表"
+			}
+		},
+		{
+			"path": "pages/chat/chat",
+			"style": {
+				"navigationBarTitleText": "会话页面"
+			}
+		},
+		{
+			"path": "pages/chat-input/chat-input",
+			"style": {}
+		},
+		{
+			"path": "pages/jyxc/feedbackjy",
+			"style": {
+				"navigationBarTitleText": "建言献策"
+				// "navigationStyle": "custom" //禁用uni-app默认的头部导航
+			}
+		},
+		{
+			"path": "pages/jyxc/feedbackjyJyfc",
+			"style": {
+				"navigationBarTitleText": "经验分享"
+				// "navigationStyle": "custom" //禁用uni-app默认的头部导航
+			}
+		},
+		{
+			"path": "pages/jyxc/feedbackjytc",
+			"style": {
+				"navigationBarTitleText": "我要吐槽"
+				// "navigationStyle": "custom" //禁用uni-app默认的头部导航
+			}
+		},
+		{
+			"path": "pages/main/detail",
+			"style": {
+				"navigationBarTitleText": "详情",
+				"enablePullDownRefresh": false
+			}
+
+		},
+		{
+			"path": "pages/partyBuilding/partyBuilding",
+			"style": {
+				// "navigationStyle": "custom" //禁用uni-app默认的头部导航
+				"navigationBarTitleText": "党建引领", //顶部名称
+				"navigationBarBackgroundColor": "#ba1524", //顶部背景色
+				"navigationBarTextStyle": "white", //文字颜色，目前只支持white和black这两种颜色（小程序）
+				"fontSize": "18px"
+			}
+		},
+		{
+			"path": "pages/user/user",
+			"style": {
+				"navigationStyle": "custom" //禁用uni-app默认的头部导航
+			}
+		},
+		// {
+		// 	"path": "pages/login/editAvator",
+		// 	"style": {
+		// 		"navigationBarTitleText": ""
+		// 	}
+		// },
+		// {
+		// 	"path": "pages/login/index",
+		// 	"style": {
+		// 		"navigationBarTitleText": "登陆"
+		// 	}
+		// },
+
+		// {
+		// 	"path": "pages/login/register",
+		// 	"style": {
+		// 		"navigationBarTitleText": "注册"
+		// 	}
+		// },
+		{
+			"path": "pages/example/components",
+			"style": {
+				"navigationBarTitleText": ""
+			}
+		}
+	],
+	"subPackages": [{
+			"root": "pages/componentsA",
+			"pages": [
+				// 过渡动画
+				{
+					"path": "transition/transition",
+					"style": {
+						"navigationBarTitleText": "过渡动画"
+					}
+				},
+				{
+					"path": "test/test",
+					"style": {
+						"navigationBarTitleText": "测试"
+					}
+				},
+				{
+					"path": "icon/icon",
+					"style": {
+						"navigationBarTitleText": "图标"
+					}
+				},
+				{
+					"path": "cell/cell",
+					"style": {
+						"navigationBarTitleText": "单元格"
+					}
+				},
+				{
+					"path": "line/line",
+					"style": {
+						"navigationBarTitleText": "线条"
+					}
+				},
+				{
+					"path": "image/image",
+					"style": {
+						"navigationBarTitleText": "图片"
+					}
+				},
+				{
+					"path": "link/link",
+					"style": {
+						"navigationBarTitleText": "超链接"
+					}
+				},
+				{
+					"path": "button/button",
+					"style": {
+						"navigationBarTitleText": "按钮"
+					}
+				},
+				{
+					"path": "loading-icon/loading-icon",
+					"style": {
+						"navigationBarTitleText": "加载中图标"
+					}
+				},
+				{
+					"path": "overlay/overlay",
+					"style": {
+						"navigationBarTitleText": "遮罩层",
+						"navigationStyle": "custom"
+					}
+				},
+				{
+					"path": "loading-page/loading-page",
+					"style": {
+						"navigationBarTitleText": "加载页",
+						"navigationStyle": "custom"
+					}
+				},
+				{
+					"path": "popup/popup",
+					"style": {
+						"navigationBarTitleText": "弹窗",
+						"navigationStyle": "custom"
+					}
+				},
+				{
+					"path": "swipeAction/swipeAction",
+					"style": {
+						"navigationBarTitleText": "滑动单元格"
+					}
+				},
+				{
+					"path": "sticky/sticky",
+					"style": {
+						"navigationBarTitleText": "吸顶"
+					}
+				},
+				{
+					"path": "radio/radio",
+					"style": {
+						"navigationBarTitleText": "单选框"
+					}
+				},
+				{
+					"path": "checkbox/checkbox",
+					"style": {
+						"navigationBarTitleText": "复选框"
+					}
+				},
+				{
+					"path": "empty/empty",
+					"style": {
+						"navigationBarTitleText": "内容为空"
+					}
+				},
+				{
+					"path": "backtop/backtop",
+					"style": {
+						"navigationBarTitleText": "返回顶部"
+					}
+				},
+				{
+					"path": "divider/divider",
+					"style": {
+						"navigationBarTitleText": "分割线"
+					}
+				},
+				{
+					"path": "rate/rate",
+					"style": {
+						"navigationBarTitleText": "评分"
+					}
+				},
+				{
+					"path": "gap/gap",
+					"style": {
+						"navigationBarTitleText": "间隔槽"
+					}
+				},
+				{
+					"path": "grid/grid",
+					"style": {
+						"navigationBarTitleText": "宫格"
+					}
+				}
+			]
+		},
+		{
+			"root": "pages/componentsB",
+			"pages": [{
+					"path": "dropdown/dropdown",
+					"style": {
+						"navigationBarTitleText": "下拉菜单"
+					}
+				},
+				{
+					"path": "actionSheet/actionSheet",
+					"style": {
+						"navigationBarTitleText": "上拉菜单",
+						"navigationStyle": "custom"
+					}
+				},
+				{
+					"path": "parse/parse",
+					"style": {
+						"navigationBarTitleText": "富文本解析器"
+					}
+				},
+				{
+					"path": "parse/jump",
+					"style": {
+						"navigationBarTitleText": "内部链接"
+					}
+				},
+				{
+					"path": "toast/toast",
+					"style": {
+						"navigationBarTitleText": "提示消息"
+					}
+				},
+				{
+					"path": "keyboard/keyboard",
+					"style": {
+						"navigationBarTitleText": "键盘",
+						"navigationStyle": "custom"
+					}
+				},
+				{
+					"path": "slider/slider",
+					"style": {
+						"navigationBarTitleText": "滑动选择器"
+					}
+				},
+				{
+					"path": "upload/upload",
+					"style": {
+						"navigationBarTitleText": "上传"
+					}
+				},
+				{
+					"path": "notify/notify",
+					"style": {
+						"navigationBarTitleText": "消息提示"
+					}
+				},
+				{
+					"path": "countDown/countDown",
+					"style": {
+						"navigationBarTitleText": "倒计时"
+					}
+				},
+				{
+					"path": "color/color",
+					"style": {
+						"navigationBarTitleText": "色彩"
+					}
+				},
+				{
+					"path": "numberBox/numberBox",
+					"style": {
+						"navigationBarTitleText": "步进器"
+					}
+				},
+				{
+					"path": "countTo/countTo",
+					"style": {
+						"navigationBarTitleText": "数字滚动"
+					}
+				},
+				{
+					"path": "search/search",
+					"style": {
+						"navigationBarTitleText": "搜索"
+					}
+				},
+				{
+					"path": "badge/badge",
+					"style": {
+						"navigationBarTitleText": "徽标数"
+					}
+				},
+				{
+					"path": "tag/tag",
+					"style": {
+						"navigationBarTitleText": "标签"
+					}
+				},
+				{
+					"path": "alert/alert",
+					"style": {
+						"navigationBarTitleText": "警告"
+					}
+				},
+				{
+					"path": "switch/switch",
+					"style": {
+						"navigationBarTitleText": "开关"
+					}
+				},
+				{
+					"path": "collapse/collapse",
+					"style": {
+						"navigationBarTitleText": "折叠面板"
+					}
+				},
+				{
+					"path": "code/code",
+					"style": {
+						"navigationBarTitleText": "验证码"
+					}
+				},
+				{
+					"path": "noticeBar/noticeBar",
+					"style": {
+						"navigationBarTitleText": "滚动通知"
+					}
+				},
+				{
+					"path": "progress/progress",
+					"style": {
+						"navigationBarTitleText": "进度条"
+					}
+				},
+				{
+					"path": "tabbar/tabbar",
+					"style": {
+						"navigationBarTitleText": "Tabbar"
+					}
+				}
+			]
+		},
+		{
+			"root": "pages/componentsC",
+			"pages": [{
+					"path": "table/table",
+					"style": {
+						"navigationBarTitleText": "表格"
+					}
+				},
+				{
+					"path": "form/form",
+					"style": {
+						"navigationBarTitleText": "表单",
+						"navigationStyle": "custom"
+					}
+				},
+				{
+					"path": "textarea/textarea",
+					"style": {
+						"navigationBarTitleText": "文本域"
+					}
+				},
+				{
+					"path": "noNetwork/noNetwork",
+					"style": {
+						"navigationBarTitleText": "无网络提示"
+					}
+				},
+				{
+					"path": "loadmore/loadmore",
+					"style": {
+						"navigationBarTitleText": "加载更多"
+					}
+				},
+				{
+					"path": "text/text",
+					"style": {
+						"navigationBarTitleText": "文本"
+					}
+				},
+				{
+					"path": "steps/steps",
+					"style": {
+						"navigationBarTitleText": "步骤条"
+					}
+				},
+				{
+					"path": "navbar/navbar",
+					"style": {
+						"navigationBarTitleText": "导航栏",
+						"navigationStyle": "custom"
+					}
+				},
+				{
+					"path": "skeleton/skeleton",
+					"style": {
+						"navigationBarTitleText": "骨架屏"
+					}
+				},
+				{
+					"path": "input/input",
+					"style": {
+						"navigationBarTitleText": "输入框"
+					}
+				},
+				{
+					"path": "album/album",
+					"style": {
+						"navigationBarTitleText": "相册"
+					}
+				},
+				{
+					"path": "avatar/avatar",
+					"style": {
+						"navigationBarTitleText": "头像"
+					}
+				},
+				{
+					"path": "readMore/readMore",
+					"style": {
+						"navigationBarTitleText": "阅读更多"
+					}
+				},
+				{
+					"path": "layout/layout",
+					"style": {
+						"navigationBarTitleText": "布局"
+					}
+				},
+				{
+					"path": "indexList/indexList",
+					"style": {
+						"navigationBarTitleText": "索引列表"
+					}
+				},
+				{
+					"path": "tooltip/tooltip",
+					"style": {
+						"navigationBarTitleText": "长按提示"
+					}
+				},
+				{
+					"path": "tabs/tabs",
+					"style": {
+						"navigationBarTitleText": "标签"
+					}
+				},
+				{
+					"path": "list/list",
+					"style": {
+						"navigationBarTitleText": "列表"
+					}
+				},
+				{
+					"path": "swiper/swiper",
+					"style": {
+						"navigationBarTitleText": "轮播"
+					}
+				},
+				{
+					"path": "scrollList/scrollList",
+					"style": {
+						"navigationBarTitleText": "横向滚动列表"
+					}
+				},
+				{
+					"path": "codeInput/codeInput",
+					"style": {
+						"navigationBarTitleText": "验证码输入"
+					}
+				},
+				{
+					"path": "modal/modal",
+					"style": {
+						"navigationBarTitleText": "模态框",
+						"navigationStyle": "custom"
+					}
+				},
+				{
+					"path": "picker/picker",
+					"style": {
+						"navigationBarTitleText": "选择器",
+						"navigationStyle": "custom"
+					}
+				},
+				{
+					"path": "calendar/calendar",
+					"style": {
+						"navigationBarTitleText": "日历",
+						"navigationStyle": "custom"
+					}
+				},
+				{
+					"path": "datetimePicker/datetimePicker",
+					"style": {
+						"navigationBarTitleText": "时间选择",
+						"navigationStyle": "custom"
+					}
+				},
+				{
+					"path": "subsection/subsection",
+					"style": {
+						"navigationBarTitleText": "分段器"
+					}
+				}
+			]
+		},
+		{
+			"root": "pages/home",
+			"pages": [{
+					"path": "merchantsCard",
+					"style": {
+						"navigationBarTitleText": "商家登记码"
+					}
+				},
+				{
+					"path": "checkfeedBack",
+					"style": {
+						"navigationBarTitleText": "问题反馈"
+					}
+				},
+
+				{
+					"path": "feedbackList",
+					"style": {
+						"navigationBarTitleText": "问题反馈"
+					}
+				},
+
+				{
+					"path": "merchants",
+					"style": {
+						"navigationBarTitleText": "商家登记码申请"
+					}
+				},
+
+
+				{
+					"path": "feedback",
+					"style": {
+						"navigationBarTitleText": "问题反馈"
+					}
+				}
+			]
+		},
+		{
+			"root": "pages/report-home",
+			"pages": [{
+					"path": "access",
+					"style": {
+						"navigationBarTitleText": "进出东兴报备"
+					}
+				},
+				{
+					"path": "situation-report",
+					"style": {
+						"navigationBarTitleText": "出东兴报备申请"
+					}
+				},
+				{
+					"path": "reporting-query",
+					"style": {
+						"navigationBarTitleText": "报备申请查询"
+					}
+				},
+				{
+					"path": "pass",
+					"style": {
+						"navigationBarTitleText": "通行证"
+					}
+				},
+				{
+					"path": "index",
+					"style": {
+						"navigationBarTitleText": "进东兴报备"
+					}
+				},
+				{
+					"path": "search",
+					"style": {
+						"navigationBarTitleText": "报备申请查询"
+					}
+				},
+				{
+					"path": "inCrowd",
+					"style": {
+						"navigationBarTitleText": "群众进东兴报备"
+					}
+				},
+				{
+					"path": "delivery",
+					"style": {
+						"navigationBarTitleText": "货物签收确认"
+					}
+				},
+				{
+					"path": "isolation",
+					"style": {
+						"navigationBarTitleText": "隔离人员到店确认"
+					}
+				},
+				{
+					"path": "inbound",
+					"style": {
+						"navigationBarTitleText": "入境人员报备"
+					}
+				},
+				{
+					"path": "truck",
+					"style": {
+						"navigationBarTitleText": "货车司机进东兴报备"
+					}
+				}
+
+			]
+		},
+		{
+			"root": "pages/work-platform",
+			"pages": [{
+					"path": "statistics",
+					"style": {
+						"navigationBarTitleText": "网格工作统计"
+					}
+				},
+				{
+					"path": "index",
+					"style": {
+						"navigationBarTitleText": "网格工作平台"
+					}
+				},
+				{
+					"path": "add-job",
+					"style": {
+						"navigationBarTitleText": "网格工作平台"
+					}
+				}
+			]
+		}, {
+			"root": "pages/nucleic",
+			"pages": [{
+					"path": "passSelect",
+					"style": {
+						"navigationBarTitleText": "家人电子网格证"
+					}
+				},
+				{
+					"path": "passApply",
+					"style": {
+						"navigationBarTitleText": "电子网格证代申请"
+					}
+				},
+				{
+					"path": "passProxyAdd",
+					"style": {
+						"navigationBarTitleText": "电子网格证代查询"
+					}
+				},
+				{
+					"path": "passProxySearch",
+					"style": {
+						"navigationBarTitleText": "电子网格证代查询"
+					}
+				},
+				{
+					"path": "passApplyOwn",
+					"style": {
+						"navigationBarTitleText": "电子网格证申请"
+					}
+				},
+				{
+					"path": "apply",
+					"style": {
+						"navigationBarTitleText": "通行码申请系统"
+					}
+				},
+
+				{
+					"path": "family",
+					"style": {
+						"navigationBarTitleText": "通行证代查询"
+					}
+				},
+				{
+					"path": "employeePermit",
+					"style": {
+						"navigationBarTitleText": "工作证"
+					}
+				},
+				{
+					"path": "permit",
+					"style": {
+						"navigationBarTitleText": "电子网格证"
+					}
+				},
+				{
+					"path": "familyPermit",
+					"style": {
+						"navigationBarTitleText": "代扫码登记查询"
+					}
+				},
+				{
+					"path": "uploadcard",
+					"style": {
+						"navigationBarTitleText": "通行码申请系统"
+					}
+				},
+				{
+					"path": "applylose",
+					"style": {
+						"navigationBarTitleText": "审核结果"
+					}
+				},
+				{
+					"path": "applyreject",
+					"style": {
+						"navigationBarTitleText": "审核结果"
+					}
+				}, {
+					"path": "registration-Inquiry",
+					"style": {
+						"navigationBarTitleText": "登记信息",
+						"enablePullDownRefresh": false
+					}
+
+				}, {
+					"path": "notification",
+					"style": {
+						"navigationBarTitleText": "通知列表",
+						"enablePullDownRefresh": false
+					}
+
+				}, {
+					"path": "notificationInfo",
+					"style": {
+						"navigationBarTitleText": "通知详情",
+						"enablePullDownRefresh": false
+					}
+
+				}
+			]
+		},
+		{
+			"root": "pages/login",
+			"pages": [{
+					"path": "editAvator",
+					"style": {
+						"navigationBarTitleText": ""
+					}
+				},
+				{
+					"path": "index",
+					"style": {
+						"navigationBarTitleText": "登陆"
+					}
+				},
+				{
+					"path": "register",
+					"style": {
+						"navigationBarTitleText": "注册"
+					}
+				},
+				{
+					"path": "userDetail",
+					"style": {
+						"navigationBarTitleText": "个人中心"
+					}
+				}
+			]
+		}
+	],
+	"preloadRule": {
+		"pages/example/components": {
+			"network": "all",
+			"packages": [
+				"pages/componentsA",
+				"pages/componentsB",
+				"pages/home",
+				"pages/nucleic"
+			]
+		}
+	},
+	"globalStyle": {
+		"navigationBarTextStyle": "white",
+		"navigationBarTitleText": "uView",
+		"navigationBarBackgroundColor": "#3A8CF0",
+		"backgroundColor": "#FFFFFF"
+	},
+	"condition": { //模式配置，仅开发期间生效
+		"current": 0, //当前激活的模式(list 的索引项)
+		"list": [{
+			"name": "", //模式名称
+			"path": "", //启动页面，必选
+			"query": "" //启动参数，在页面的onLoad函数里面得到
+		}]
+	},
+	"tabBar": {
+		"color": "#7A7E83",
+		"selectedColor": "#7CA2F4",
+		"borderStyle": "black",
+		"backgroundColor": "#FFFFFF",
+		"list": [{
+				"pagePath": "pages/main/index",
+				"iconPath": "static/tabbar/index.png",
+				"selectedIconPath": "static/tabbar/index1.png",
+				"text": "首页"
+			},
+			{
+				"pagePath": "pages/jyxc/jyxc",
+				"iconPath": "static/tabbar/jyxc.png",
+				"selectedIconPath": "static/tabbar/jyxc1.png",
+				"text": "社情民意"
+			},
+			{
+				"pagePath": "pages/partyBuilding/partyBuilding",
+				"iconPath": "static/tabbar/partyBuilding.png",
+				"selectedIconPath": "static/tabbar/tabs3-2@2x.png",
+				"text": "党建引领"
+
+			},
+			{
+				"pagePath": "pages/user/user",
+				"iconPath": "static/tabbar/user.png",
+				"selectedIconPath": "static/tabbar/user1.png",
+				"text": "个人"
+			}
+		]
+	}
+}

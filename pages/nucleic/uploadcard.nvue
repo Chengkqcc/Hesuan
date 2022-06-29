@@ -1,0 +1,510 @@
+<template>
+	<div class="backge" :style="{'background-image': 'url('+background1+') ;'}">
+		<view class="u-page">
+			<view class="u-demo-block">
+				<text class="u-demo-block__title">核酸编码</text>
+				<view class="u-demo-block__content" style="margin-top: 15px;background-color: #ffffff;">
+					<!-- 注意：由于兼容性差异，如果需要使用前后插槽，nvue下需使用u--input，非nvue下需使用u-input -->
+					<!-- #ifndef APP-NVUE -->
+					<u-input placeholder="请输入核酸码" v-model="hsCode">
+						<!-- #endif -->
+						<!-- #ifdef APP-NVUE -->
+						<u--input v-model="hsCode" placeholder="请输入核酸码">
+							<!-- #endif -->
+							<template slot="suffix">
+								<u-button @tap="scanCode" text="上传核酸码" type="primary"></u-button>
+							</template>
+							<!-- #ifndef APP-NVUE -->
+					</u-input>
+					<!-- #endif -->
+					<!-- #ifdef APP-NVUE -->
+					</u--input>
+					<!-- #endif -->
+				</view>
+			</view>
+			<view class="u-demo-block">
+				<text class="u-demo-block__title">{{title}}</text>
+				<view class="u-demo-block__content">
+					<view class="u-page__upload-item">
+						<u-upload :fileList="fileList5" @afterRead="afterRead" @delete="deletePic" name="5" multiple
+							:maxCount="1" width="680upx" height="400upx">
+							<image src="../../static/sfz_a.png" mode="widthFix" class="img">
+							</image>
+						</u-upload>
+					</view>
+				</view>
+				<!-- <view class="u-demo-block__content" style="margin-top: 15px;">
+					<view class="u-page__upload-item">
+						<u-upload :fileList="fileList6" @afterRead="afterRead" @delete="deletePic" name="6" multiple
+							:maxCount="1" width="300" height="200">
+							<image src="../../static/sfz_b.png" mode="widthFix" class="img">
+							</image>
+						</u-upload>
+					</view>
+				</view> -->
+			</view>
+			<view class="u-demo-block">
+				<view class="u-demo-block__content demo_div"
+					style=" padding: 0 20px 20px 20px; flex-direction: column;align-items: stretch;flex-wrap: nowrap;">
+					<view>
+						<u-button text="下一步" @click="submitCard(true)" size="large" type="primary"></u-button>
+					</view>
+
+					<view style="margin-top: 50upx;">
+
+						<u-button :plain="true" text="无身份证手动填写" @click="submitCard(false)" size="large" type="primary">
+						</u-button>
+					</view>
+				</view>
+			</view>
+			<u-loading-page :loadingText="loadingPageData.loadingText" :image="loadingPageData.image"
+				:loadingMode="loadingPageData.loadingMode" :bgColor="loadingPageData.bgColor" :loading="loading"
+				:color="loadingPageData.color" :loadingColor="loadingPageData.loadingColor">
+			</u-loading-page>
+			<u-modal :content="content" :show="show3" showCancelButton closeOnClickOverlay @confirm="confirm"
+				@cancel="cancel" @close="close"></u-modal>
+		</view>
+	</div>
+</template>
+
+<script>
+	import {
+		getOpenId,
+		getCompanyByHsCodeV2,
+		getCardDetail,
+		getUploadToken
+	} from '../../common/api.js'
+	import config from '@/common/config'
+	export default {
+		data() {
+			return {
+				openId: '',
+				qiniuToken: '',
+				actingType: "2",
+				lockType: true,
+				show3: false,
+				userInfo: {},
+				cardImgData: {},
+				content: '证件信息未识别，现在去手动填写信息？',
+				loadingPageData: {
+					// 自定义提示内容
+					loadingText: '',
+					// 自定义图片
+					image: '',
+					// 自定义加载动画模式
+					loadingMode: '',
+					// 自定义背景色
+					bgColor: '#ffffff',
+				},
+				loading: false,
+				fileList5: [],
+				fileList6: [],
+				frontImg: '',
+				reverseImg: '',
+				hsCode: '',
+				title: '上传身份证正面',
+				background1: "https://admin.xzlglobal.com/hsfile/bg_mp.jpg",
+			};
+		},
+
+		onShow() {
+			uni.hideShareMenu()
+			var that = this
+			uni.setStorageSync('openId', "");
+			uni.setStorageSync('userInfo', "");
+			uni.setStorageSync('cardImgData', "");
+			uni.setStorageSync('cardDetailData', '');
+			uni.setStorageSync('generationType', false);
+			//根据code获取openid等信息
+			wx.login({
+				success: function(res) {
+					if (res.code) {
+						//发起网络请求
+						console.log('获取用户成功！' + res.code)
+						that.getOpenId(res.code)
+					} else {
+						console.log('获取用户登录态失败！' + res.errMsg)
+					}
+				}
+			});
+			that.getQiniuToken()
+		},
+		onLoad(option) {
+			if (option != null && option != "") {
+				var data = option.actingType; // 字符串转对象
+				if (data) {
+					this.actingType = data
+				}
+				if(option.hsCode!=null && option.hsCode!=''){
+					this.hsCode = option.hsCode
+				}
+			}
+
+		},
+		methods: {
+
+			//获取用户信息
+			async getOpenId(code) {
+				var that = this
+				await getOpenId(code).then(res => {
+					console.log(res)
+					if (res && JSON.stringify(res) !== "{}") {
+						that.openId = res
+						uni.setStorageSync('openId', res);
+					}
+				}).catch(err => {
+
+				})
+			},
+			openLoadingPage() {
+				this.loadingPageData = {
+					loadingText: '',
+					image: '',
+					loadingMode: '',
+					bgColor: '#ffffff',
+				}
+				// 自定义背景色
+				this.loadingPageData.loadingMode = 'spinner'
+				this.loadingPageData.bgColor = 'rgba(0, 0, 0, 0.4)'
+				this.loadingPageData.loadingText = "加载中"
+				this.loadingPageData.color = '#eee',
+					this.loading = true
+				setTimeout(() => {
+					this.loading = false
+				}, 1000)
+			},
+			// 删除图片
+			deletePic(event) {
+				var that = this
+				this[`fileList${event.name}`].splice(event.index, 1)
+				if (event.name == 5) {
+					that.frontImg = ''
+				} else if (event.name == 6) {
+					that.reverseImg = ''
+				}
+			},
+			async getQiniuToken() { //获取七牛的uptoken
+				var that = this
+				getUploadToken().then(res => {
+					if (res && JSON.stringify(res) !== "{}") {
+						this.qiniuToken = res
+					}
+
+				}).catch(err => {
+
+				})
+
+			},
+
+
+			// 新增图片
+			async afterRead(event) {
+				// 当设置 mutiple 为 true 时, file 为数组格式，否则为对象格式
+				let lists = [].concat(event.file)
+				console.log(lists)
+				let fileListLen = this[`fileList${event.name}`].length
+				lists.map((item) => {
+					this[`fileList${event.name}`].push({
+						...item,
+						status: 'uploading',
+						message: '上传中'
+					})
+				})
+				for (let i = 0; i < lists.length; i++) {
+					const result = await this.uploadFilePromise(lists[i].url, event.name)
+					let item = this[`fileList${event.name}`][fileListLen]
+					this[`fileList${event.name}`].splice(fileListLen, 1, Object.assign(item, {
+						status: 'success',
+						message: '',
+						url: result
+					}))
+					fileListLen++
+				}
+			},
+			uploadFilePromise(url, name) {
+				var that = this
+				return new Promise((resolve, reject) => {
+					let a = uni.uploadFile({
+						url: 'https://upload-z1.qiniup.com/',
+						// url: config.baseUrl + '/wechat/common/upload',
+						filePath: url,
+						name: 'file',
+						formData: {
+							token: that.qiniuToken,
+						},
+						success: (res) => {
+							setTimeout(() => {
+
+								if (res.data) {
+									// var data = JSON.parse(res.data);
+									console.log(res)
+									var imgData = JSON.parse(res.data);
+									console.log(imgData)
+									if (name == 5) {
+										that.frontImg = config.qiniuUrl + imgData.key
+										console.log(config.qiniuUrl + imgData.key)
+										that.fileList5.forEach(item => {
+											item.url = config.qiniuUrl + imgData.key
+										})
+										// that.fileList5.push({url:config.baseUrl + imgData.fileName})
+										console.log(that.fileList5)
+									} else if (name == 6) {
+										that.reverseImg = config.qiniuUrl + imgData.key
+										that.fileList6.forEach(item => {
+											item.url = config.qiniuUrl + imgData.key
+										})
+										// that.fileList6.push({url:config.baseUrl + imgData.fileName})
+									}
+									resolve(config.qiniuUrl + imgData.key)
+								}
+
+							}, 1000)
+						}
+					});
+				})
+			},
+			/**
+			 * 判断字符只能为字母或数字
+			 * @param str
+			 * @returns {boolean}
+			 */
+			containSpecial(s) {
+				return /^[\da-z]+$/i.test(s);
+			},
+			/**
+			 * @param {Boolean} type 是否有身份证 
+			 */
+			async submitCard(type) {
+				var that = this
+				// if (!this.hsCode || this.hsCode == "" || this.hsCode.length < 17) {
+				// 	uni.showToast({
+				// 		title: '请输入正确的核酸码',
+				// 		icon: 'none',
+				// 		duration: 2000
+				// 	});
+				// 	return false
+				// }
+				console.log(this.hsCode.indexOf('HZ'))
+				this.hsCode = this.hsCode.toUpperCase().replace(/\s+/g, "");
+				if (this.hsCode == null || this.hsCode == "" || this.hsCode.indexOf('HZ') == -1 || this.hsCode.length >
+					17) {
+					uni.showToast({
+						title: '请输入正确的核酸码',
+						icon: 'none',
+						duration: 2000
+					});
+					return false
+				}
+				if(!that.containSpecial(this.hsCode)){
+					uni.$u.toast('请输入正确的核酸码！')
+					return false
+				}
+				if (type) {
+					if (!this.frontImg || this.frontImg == "") {
+						uni.showToast({
+							title: '请上传证件正面图片',
+							icon: 'none',
+							duration: 2000
+						});
+						return false
+					}
+				}
+				if (this.hsCode != null && this.hsCode != '') {
+					await getCompanyByHsCodeV2({hsCode:this.hsCode,openId:that.openId}).then(res => {
+						if (res) {
+							if (JSON.stringify(res) == "{}") {
+								that.userInfo = {}
+							} else {
+								that.userInfo = res
+								if(that.userInfo.openidUser!=null && that.userInfo.openidUser!=''){
+									uni.redirectTo({
+										url: '/pages/nucleic/apply',
+									})
+									return false
+								}
+							}
+							uni.showLoading({
+								title: '加载中',
+								mask: false
+							});
+							if (type) {
+								that.getCardDetail()
+							} else { //无身份证用户
+								this.cardImgData = {
+									hsCode: this.hsCode,
+									frontImg: '',
+									reverseImg: ''
+								}
+								that.confirm()
+							}
+						}
+
+					}).catch(err => {
+						that.lockType = true
+					})
+				} else {
+					uni.showToast({
+						title: '请输入正确的核酸码',
+						icon: 'none',
+						duration: 2000
+					});
+					return false
+				}
+			},
+			//获取证件识别
+			async getCardDetail() {
+				var that = this
+				this.cardImgData = {
+					hsCode: this.hsCode,
+					frontImg: this.frontImg,
+					reverseImg: this.reverseImg
+				}
+				uni.setStorageSync('cardImgData', JSON.stringify(this.cardImgData));
+				var data = {
+					hsCode: this.hsCode,
+					url: this.frontImg
+					// url: 'https://img.alicdn.com/imgextra/i3/O1CN01BJBQ6i1tl1fq1yOrD_!!6000000005941-2-tps-805-655.png'
+					// url: 'https://qiniu.xzlglobal.com/%E5%BE%AE%E4%BF%A1%E5%9B%BE%E7%89%87_20220317211041.jpg'
+				}
+
+
+
+				//证件信息识别
+				await getCardDetail(data, {
+					custom: {
+						toast: false,
+						catch: true
+					}
+				}).then(res => {
+
+					console.log(res)
+					if (res) {
+						that.lockType = true
+						var cardDetailData = res
+						if (that.userInfo != null && JSON.stringify(that.userInfo) != "{}") {
+							cardDetailData.phone = that.userInfo.phone
+							cardDetailData.registerAddr = '' //that.userInfo.registerAddr
+							cardDetailData.addr1 = '' //that.userInfo.addr1
+						}
+						uni.setStorageSync('cardDetailData', JSON.stringify(cardDetailData));
+						uni.navigateTo({
+							url: '/pages/nucleic/confirmation?cardDetailData=' +
+								encodeURIComponent(JSON.stringify(cardDetailData)) + '&cardImgData=' +
+								encodeURIComponent(JSON.stringify(that.cardImgData)) + '&actingType=' +
+								that.actingType,
+						})
+					}
+				}).catch(err => {
+					that.lockType = true
+					that.show3 = true
+				})
+
+			},
+			confirm() {
+				var that = this
+				this.show3 = false
+				var cardDetailData = {}
+				if (that.userInfo != null && JSON.stringify(that.userInfo) != "{}") {
+					cardDetailData = {
+						name: that.userInfo.name,
+						phone: that.userInfo.phone,
+						sex: that.userInfo.sex == 0 ? '男' : '女',
+						ethnicity: '',
+						birthDate: that.userInfo.birthday,
+						address: that.userInfo.address ? that.userInfo.address : '',
+						idNumber: '', //that.userInfo.idNumber,
+						registerAddr: that.userInfo.registerAddr,
+						addr1: '' //that.userInfo.addr1
+					}
+					uni.setStorageSync('cardDetailData', JSON.stringify(cardDetailData));
+				} else {
+					uni.setStorageSync('cardDetailData', "");
+				}
+
+				uni.navigateTo({
+					url: '/pages/nucleic/confirmation?cardDetailData=' +
+						encodeURIComponent(JSON.stringify(cardDetailData)) + '&cardImgData=' +
+						encodeURIComponent(JSON.stringify(that.cardImgData)) + '&actingType=' + that.actingType,
+				})
+			},
+			cancel() {
+				this.show3 = false
+				console.log('cancel');
+			},
+			close() {
+				this.show3 = false
+				console.log('close');
+			},
+
+			str2utf8(str) {
+				var encoder = new TextEncoder('utf8');
+				return encoder.encode(str);
+			},
+			scanCode() {
+				var that = this
+
+				//扫码
+				uni.scanCode({
+					//onlyFromCamera: true, //只能从相机中获取，不能从图片中获取
+					success: function(res) { //获取扫码结果
+						that.openLoadingPage()
+						if (res.result && res.result.length >= 17) {
+							var dataStr = res.result
+							console.log(dataStr)
+							var str = dataStr.split('(')
+							if (str.length >= 1) {
+								that.hsCode = dataStr.split('(')[0]
+							} else {
+								uni.showToast({
+									title: '无效二维码，扫码正确的核酸码',
+									icon: 'none',
+									duration: 2000
+								});
+							}
+						} else {
+							uni.showToast({
+								title: '无效二维码，扫码正确的核酸码',
+								icon: 'none',
+								duration: 2000
+							});
+						}
+					}
+				});
+			}
+		}
+	}
+</script>
+
+<style lang="scss" scoped>
+	.backge {
+		width: calc(100%);
+		height: 100vh;
+		background-size: 100% 100vh;
+		background-repeat: no-repeat;
+
+	}
+
+	.img {
+		width: 680upx;
+		height: 400upx;
+	}
+
+	.u-page {
+		&__button-item {
+			margin: 0 15px 15px 0;
+		}
+	}
+
+	.u-demo-block__content {
+		flex-direction: row;
+		flex-wrap: wrap;
+		align-items: center;
+	}
+
+	.demo_div {
+		left: 0;
+		position: fixed;
+		bottom: 0;
+		width: 100%;
+	}
+</style>

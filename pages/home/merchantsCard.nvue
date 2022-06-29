@@ -1,0 +1,315 @@
+<template>
+	<div class="backge">
+		<view class="u-page">
+			<view class="u-demo-block">
+				<div class="title" style="margin-top:60rpx ;">【东兴市智慧化管理平台】</div>
+				<div class="title">{{title}}</div>
+				<swiper @change="changeSlider" :indicator-dots="indicatorDots" class="swiper" :autoplay="false">
+					<swiper-item class="swiper-item" v-if="comeInText !==''">
+						<view style="width: 500rpx;height: 500rpx;margin: 0 auto;">
+							<QrCode cid='qr-2' ref="uQRCodeIn" :size="qrSize" :text="comeInText" />
+						</view>
+						<div class="code-name">入口扫码登记</div>
+					</swiper-item>
+					<swiper-item class="swiper-item" v-if="comeOutText !==''">
+						<view style="width: 500rpx;height: 500rpx;margin: 0 auto;">
+							<QrCode cid='qr-3' ref="uQRCodeOut" :size="qrSize" :text="comeOutText" />
+						</view>
+						<div class="code-name">出口扫码登记</div>
+					</swiper-item>
+				</swiper>
+			</view>
+			<view class="indicator">
+				<view class="indicator__dot" v-for="(item, index) in list5" :key="index"
+					:class="[index === current && 'indicator__dot--active']">
+				</view>
+			</view>
+			<view class="u-demo-block__content demo_div"
+				style=" padding: 0 20px 20px 20px; flex-direction: column;align-items: stretch;flex-wrap: nowrap;">
+				<view>
+					<u-button text="下载" @click="downloadImg" size="large" type="primary"></u-button>
+				</view>
+			</view>
+			<canvas canvas-id="myCanvas" style="width: 1040upx; height: 1640upx;" id='canvas'></canvas>
+		</view>
+	</div>
+</template>
+
+<script>
+	import {
+		getOpenId,
+		getCompanyByHsCodeV2,
+		getCardDetail,
+		getUploadToken,
+		getMerchantInfo
+	} from '../../common/api.js'
+	import config from '@/common/config'
+	import uQRCode from  '@/uni_modules/Sansnn-uQRCode/components/uqrcode/common/uqrcode.js'
+	import QrCode from './components/qrcode/index.vue'
+	export default {
+		components: { QrCode },
+		data() {
+			return {
+				current: 0,
+				indicatorDots: false,
+				qrSize: uni.upx2px(500),
+				qrSizeCanvas:uni.upx2px(800),
+				list5: [
+					{	
+						image: 'https://qiniu.xzlglobal.com/hs/mp/icon_inform%402x.png',
+						title: '入口扫码登记',
+					},
+					{
+						image: '',
+						title: '出口扫码登记',
+					}
+				],
+				foregroundImageOptions: {
+					width: 44,
+					height: 44,
+					align: ['center', 'center'],
+					anchor: [0, 0],
+					alpha: 1
+				},
+				title: '',
+				loading: true,
+				comeInText: '',
+				comeOutText: '',
+				info: {},
+				
+			};
+		},
+
+		onShow() {
+			uni.showLoading({
+				title: '加载中'
+			});
+			const that = this
+			getMerchantInfo().then(res => {
+				if (res.state === 'AGREE') {
+					this.info = res.info
+				}
+				if (this.info) {
+					this.comeInText = `${this.randomString(8)}-1-${this.randomString(4)}-${this.info.id}-${this.randomString(8)}-1`
+					this.comeOutText = `${this.randomString(8)}-2-${this.randomString(4)}-${this.info.id}-${this.randomString(8)}-1`
+					// this.getQrcode()
+					this.title = this.info.spName
+					uni.hideLoading();
+				}
+			})
+			
+		},
+		methods: {
+			randomString(length) {
+				return Math.random().toString(36).substring(2).substring(0, length);
+			},
+			copyFn(file,content) {
+				let ww, hh;
+				const query = uni.createSelectorQuery().in(this);
+				query.select('#canvas').boundingClientRect(data => {  //获取canvas-dom
+					ww = data.width; //准确的宽高
+					hh = data.height
+					var ctx = uni.createCanvasContext('myCanvas') //绑定画布
+					ctx.fillStyle = "#fff";
+					ctx.fillRect(0, 0, ww, hh);
+					ctx.setFillStyle('#fff')
+					ctx.setTextAlign('center')  //设置对于坐标点的对齐方式
+					ctx.drawImage(file, ww/2 - this.qrSizeCanvas / 2, uni.upx2px(380), this.qrSizeCanvas, this.qrSizeCanvas); //填充进图片
+					ctx.setFillStyle('#000')  //设置内容1的文字样式
+					ctx.setFontSize(uni.upx2px(60));
+					ctx.setTextAlign('center')  //设置对于坐标点的对齐方式
+					ctx.fillText('【东兴市智慧化管理平台】', ww/2, uni.upx2px(160)) //计算距离，将文字定位于图片的某处
+					if (this.title.length > 14) {
+						ctx.fillText(this.title.substring(0, 12), ww/2, uni.upx2px(260)) //计算距离，将文字定位于图片的某处
+						ctx.fillText(this.title.substring(12, this.title.length), ww/2, uni.upx2px(340)) //计算距离，将文字定位于图片的某处
+					} else {
+						
+						ctx.fillText(this.title, ww/2, uni.upx2px(300)) //计算距离，将文字定位于图片的某处
+					}
+					
+					ctx.setFillStyle('#000')  //设置内容2的文字样式
+					ctx.setFontSize(uni.upx2px(60));
+					ctx.setTextAlign('center')  //同上
+					ctx.fillText(content+'扫码登记',ww/2, uni.upx2px(1300))
+					ctx.draw();  //输出到画布中
+					uni.showLoading({ //增加loading等待效果
+						mask:true
+					})
+					setTimeout(()=>{  //不加延迟的话，base64有时候会赋予undefined
+						uni.canvasToTempFilePath({
+							canvasId:'myCanvas',
+							success: (res) => {
+								this.base64=res.tempFilePath
+								this.bcFn()
+							}
+						})
+						uni.hideLoading();
+					},200)
+				}).exec();
+			 
+			},
+			changeSlider(e) {
+				this.current = e.target.current
+			},
+			bcFn(){
+				uni.saveImageToPhotosAlbum({  //保存图片
+					filePath:this.base64,  
+					success: (res) => {
+						uni.showToast({
+							title:'保存成功',
+							icon: 'success',
+							duration: 1000
+						})
+						
+					}
+				})
+			},
+			downloadImg(){
+				// copyFn()
+				if (this.current === 0) {
+					this.$refs.uQRCodeIn.toTempFilePath({
+						success: res => {
+							console.log(res.tempFilePath)
+						  this.copyFn(res.tempFilePath,'入口')
+						}
+					})
+				} else {
+					this.$refs.uQRCodeOut.toTempFilePath({
+						success: res => {
+						  this.copyFn(res.tempFilePath,'出口')
+						}
+					})
+				}
+			},
+		}
+	}
+</script>
+
+<style lang="scss" scoped>
+	.backge {
+		width: calc(100%);
+		height: 100vh;
+		background-color: #F1F4F7;
+	}
+	.code-name {
+		font-size: 40upx;
+		font-family: PingFangSC-Semibold, PingFang SC;
+		font-weight: 600;
+		color: #333333;
+		line-height: 56upx;
+		text-align: center;
+		margin-top: 20rpx;
+	}
+	.swiper {
+		height: 644upx;
+	}
+	.swiper-item {
+		// padding: 0 80upx;
+		box-sizing: border-box;
+	}
+	.u-page {
+
+		&__button-item {
+			margin: 0 15px 15px 0;
+		}
+	}
+	#canvas {
+		width: 640upx;
+		height: 840upx;
+		position: fixed;
+		top: 35px;
+		left: 99999px;
+	}
+	.title {
+		// width: 500rpx;
+		padding:0 60rpx;
+		font-size: 42upx;
+		font-family: PingFangSC-Medium, PingFang SC;
+		font-weight: 500;
+		color: #333333;
+		line-height: 66upx;
+		// overflow: hidden;
+		// text-overflow: ellipsis;
+		// white-space: nowrap;
+		text-align: center;
+		margin: 10upx auto 30upx;
+	}
+	.u-demo-block {
+		width: 640upx;
+		height: 840upx;
+		background-color: #fff;
+		margin: 44upx auto;
+		border-radius: 8upx;
+	}
+	/deep/ .qrcode {
+		height: 480upx;
+		margin: 0 auto 40upx;
+	}
+	.qr-code {
+		// position: fixed;
+		// left: -9999upx;
+	}
+	.u-demo-block__content {
+		flex-direction: row;
+		flex-wrap: wrap;
+		align-items: center;
+	}
+	.u-demo-block__title{
+		font-size: 32upx;
+		font-weight: 600;
+	}
+	
+	.demo_div {
+		left: 0;
+		position: fixed;
+		bottom: 0;
+		width: 100%;
+	}
+
+	.indicator {
+		@include flex(row);
+		justify-content: center;
+
+		&__dot {
+			height: 6px;
+			width: 6px;
+			border-radius: 100px;
+			background-color: rgba(255, 255, 255, 0.35);
+			margin: 0 5px;
+			transition: background-color 0.3s;
+
+			&--active {
+				background-color: #ffffff;
+			}
+		}
+	}
+	.custom {
+		position: absolute;
+		left: 50%;
+		bottom: 74upx;
+		transform: translateX(-50%);
+	}
+	.indicator__dot {
+		width: 20upx;
+		background: #CCCCCC;
+		height: 20upx;
+	}
+	.indicator__dot--active {
+		background-color: #3A8CF0;
+	}
+	
+	.indicator-num {
+		padding: 2px 0;
+		background-color: rgba(0, 0, 0, 0.35);
+		border-radius: 100px;
+		width: 35px;
+		@include flex;
+		justify-content: center;
+
+		&__text {
+			color: #FFFFFF;
+			font-size: 12px;
+		}
+	}
+	
+</style>

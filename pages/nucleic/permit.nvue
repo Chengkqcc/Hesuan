@@ -1,0 +1,1589 @@
+<template>
+	<view class="permit_div">
+		<!-- <view class="content">
+			<kps-image-cutter v-if="url!=null && url!=''" @ok="onok" @cancel="oncancle" :url="url" :fixed="true"
+				:width="400" :height="400">
+			</kps-image-cutter>
+		</view> -->
+
+		<uni-swiper-dot :info="info" :current="current" :mode="mode" :dots-styles="dotsStyles">
+			<swiper class="swiper-box" @change="change">
+				<swiper-item v-for="(item ,index) in info" :key="index">
+					<u-list>
+						<view class="swiper-item" v-if="index==0">
+							<view class="u-page">
+								<view class="div_content" :style="{'background-image': 'url('+background1+') ;'}">
+									<view class="div_title">
+										<view style="padding-right: 20upx;">
+											<image src="../../static/logo1.png"></image>
+										</view>
+										<view style='flex-shrink: 1;text-align: center;'>
+											<text class="font_title"
+												v-if="userState && userState == STATE.NORMAL">东兴市智慧化管理平台</text>
+											<text class="font_title"
+												v-if="userState && userState != STATE.NORMAL">东兴市智慧化管理平台</text>
+											<text class="font_date">{{dateTime}}</text>
+										</view>
+									</view>
+									<text class="div_wangge_name">{{userInfo.companyName}}</text>
+									<view style="align-items: center; padding: 14px;margin-top: 20upx;">
+										<image src="../../static/head_gif@2x.gif" style="width: 270rpx;height: 270rpx;">
+										</image>
+										<view style="margin-top: -254rpx;margin-left: 0rpx;pointer-events: none;">
+											<image v-if="userInfo && userInfo.avatar" :src="userInfo.avatar"
+												style="width: 240rpx;height:240rpx; border-radius:5px">
+											</image>
+											<image v-else src="../../static/user_imge2.png"
+												style="width: 240rpx;height:240rpx; border-radius:5px">
+											</image>
+										</view>
+									</view>
+									<view class="u-demo-block">
+										<view class="u-demo-block-state" v-show="false">
+											<view style="padding-right: 20upx;">
+												<image v-if="userState && userState == STATE.NORMAL"
+													src="../../static/icon_yes.png">
+												</image>
+												<image v-if="userState && userState != STATE.NORMAL"
+													src="../../static/icon_nonono.png">
+												</image>
+											</view>
+											<view style='flex-shrink: 1;' v-if="source === 'scanCodeRegister'">
+												<text v-if="userState && userState == STATE.NORMAL"
+													style="color:#4CCD56; " class="state_name">扫码未见异常</text>
+												<text v-if="userState && userState != STATE.NORMAL"
+													style="color:#D23535 ;" class="state_name">扫码异常禁止通行</text>
+											</view>
+											<view style='flex-shrink: 1;' v-else>
+												<text v-if="userState && userState == STATE.NORMAL"
+													style="color:#4CCD56; " class="state_name">️正常通行</text>
+												<text v-if="userState && userState != STATE.NORMAL"
+													style="color:#D23535 ;" class="state_name">禁止通行</text>
+											</view>
+										</view>
+
+										<view class="u-demo-block__content">
+
+											<u-row justify="space-between">
+												<u-col span="4">
+													<view class=" bg-purple">
+														<span>持</span>
+														<span>证</span>
+														<span>人：</span>
+													</view>
+												</u-col>
+												<u-col span="8">
+													<view class=" bg-purple-light">{{userInfo.name}}</view>
+												</u-col>
+											</u-row>
+											<u-row justify="space-between">
+												<u-col span="4">
+													<view class=" bg-purple">
+														<span>证</span>
+														<span>件</span>
+														<span>号</span>
+														<span>码：</span>
+													</view>
+												</u-col>
+												<u-col span="8">
+													<view class=" bg-purple-light">{{userInfo.idNumber | idcard}}</view>
+												</u-col>
+											</u-row>
+											<u-row justify="space-between">
+												<u-col span="4">
+													<view class=" bg-purple">
+														<span>电</span>
+														<span>话：</span>
+													</view>
+												</u-col>
+												<u-col span="8">
+													<view class=" bg-purple-light">{{userInfo.phone|phone}}</view>
+												</u-col>
+											</u-row>
+											<u-row justify="space-between" align='top'>
+												<u-col span="4">
+													<view class=" bg-purple">
+														<span>住</span>
+														<span>址：</span>
+													</view>
+												</u-col>
+												<u-col span="8">
+													<view class=" bg-purple-light" style="word-break:break-all">
+														{{userInfo.addr && userInfo.addr!='undefined'?userInfo.addr:''}}
+													</view>
+												</u-col>
+											</u-row>
+
+
+										</view>
+
+									</view>
+									<!-- <text v-if="userState && userState == STATE.NORMAL"
+										style="color:#4CCD56 ;font-size: 24upx;">
+										*可在无疫网格通行，做好个人安全防护；个人信息保管好，请拒绝他人拍照留存。</text>
+									<text v-if="userState && userState != STATE.NORMAL"
+										style="color:#D23535 ;font-size: 24upx;">
+										*请严格落实7-14天居家健康监测，按时在网格内检测核酸。</text> -->
+									<view class="qrcode_DIV" v-if=" mpWxQrUrl && !show && !showWARING">
+										<view style="padding: 10rpx 0;">
+											<u-line color="#D23535"></u-line>
+										</view>
+										<view class="myself_qr">
+											<view class="qrcode-box">
+												<image :src="mpWxQrUrl"></image>
+												<text class="msg">个人信息识别码</text>
+												<view class="save" v-if="avatar && logo && mpWxQr ">
+													<u-button type="primary" @click="downloadImg" text="保存到相册">
+													</u-button>
+												</view>
+											</view>
+										</view>
+									</view>
+								</view>
+								<u-loading-page :loadingText="loadingPageData.loadingText"
+									:image="loadingPageData.image" :loadingMode="loadingPageData.loadingMode"
+									:bgColor="loadingPageData.bgColor" :loading="loading" :color="loadingPageData.color"
+									:loadingColor="loadingPageData.loadingColor">
+								</u-loading-page>
+
+								<!-- <u-action-sheet :show="show2" @close="show2 = false" @select="select"
+									:actions="actions2" cancelText="取消">
+								</u-action-sheet> -->
+
+
+							</view>
+
+						</view>
+						<view v-if="index==1" style="margin-top: 40rpx;">
+							<view class="swiper-item-2">
+								<view class="title" v-if="passInfo.reportType==0">
+									货车司机报备通行证
+								</view>
+								<view class="title" v-else>
+									{{ passInfo.reportType==1?'进东兴':passInfo.reportType==2?'入境':'出东兴'}}报备通行证
+								</view>
+								<view class="time" v-if="passInfo.reportType==0 && !passInfo.startFormatTime ">
+									【倒计时：暂未扫码登记 】
+								</view>
+								<view class="time" v-else>【{{passInfo.reportType==0?'扫码登记':''}}倒计时：{{countdownTime}} 】
+								</view>
+								<view class="u-demo-block__content" style="padding: 0 40rpx;margin-top: 0;">
+									<u-row justify="space-between" align='top' v-if="passInfo.startFormatTime">
+										<u-col span="4">
+											<view class=" bg-purple">
+												<span>有</span>
+												<span>效</span>
+												<span>期</span>
+												<span>限：</span>
+											</view>
+										</u-col>
+										<u-col span="8">
+											<view class=" bg-purple-light" style="word-break:break-all">
+												{{passInfo.startFormatTime}} 至
+												<view>{{passInfo.endFormatTime}}</view>
+											</view>
+										</u-col>
+
+									</u-row>
+									<u-row justify="space-between">
+										<u-col span="4">
+											<view class=" bg-purple">
+												<span>持</span>
+												<span>证</span>
+												<span>人：</span>
+											</view>
+										</u-col>
+										<u-col span="8">
+											<view class=" bg-purple-light">{{userInfo.name}}</view>
+										</u-col>
+									</u-row>
+									<u-row justify="space-between">
+										<u-col span="4">
+											<view class=" bg-purple">
+												<span>证</span>
+												<span>件</span>
+												<span>号</span>
+												<span>码：</span>
+											</view>
+										</u-col>
+										<u-col span="8">
+											<view class=" bg-purple-light">{{userInfo.idNumber | idcard}}</view>
+										</u-col>
+									</u-row>
+									<u-row justify="space-between">
+										<u-col span="4">
+											<view class=" bg-purple">
+												<span>电</span>
+												<span>话：</span>
+											</view>
+										</u-col>
+										<u-col span="8">
+											<view class=" bg-purple-light">{{userInfo.phone|phone}}</view>
+										</u-col>
+									</u-row>
+									<u-row justify="space-between" v-if="passInfo.reportType==0">
+										<u-col span="4">
+											<view class=" bg-purple">
+												<span>货</span>
+												<span>物</span>
+												<span>类</span>
+												<span>型：</span>
+											</view>
+										</u-col>
+										<u-col span="8">
+											<view class=" bg-purple-light">{{passInfo.param1}}</view>
+										</u-col>
+									</u-row>
+									<u-row justify="space-between" align='top' v-if="passInfo.reportType==0">
+										<u-col span="4">
+											<view class=" bg-purple">
+												<span>来</span>
+												<span>源</span>
+												<span>地：</span>
+											</view>
+										</u-col>
+										<u-col span="8">
+											<view class=" bg-purple-light">{{passInfo.param2}}</view>
+										</u-col>
+									</u-row>
+									<u-row justify="space-between" align='top' v-if="passInfo.reportType==2">
+										<u-col span="4">
+											<view class=" bg-purple">
+												<span>入</span>
+												<span>境</span>
+												<span>口</span>
+												<span>岸：</span>
+											</view>
+										</u-col>
+										<u-col span="8">
+											<view class=" bg-purple-light">{{passInfo.param1}}</view>
+										</u-col>
+									</u-row>
+									<u-row justify="space-between" align='top'
+										v-if="passInfo.reportType==1 || passInfo.reportType==3">
+										<u-col span="4">
+											<view class=" bg-purple">
+												<span>来</span>
+												<span>源</span>
+												<span>地：</span>
+											</view>
+										</u-col>
+										<u-col span="8">
+											<view class=" bg-purple-light">{{passInfo.param2}}</view>
+										</u-col>
+									</u-row>
+									<u-row justify="space-between" align='top'
+										v-if="passInfo.reportType!=0 && passInfo.reportType!=2">
+										<u-col span="4">
+											<view class=" bg-purple">
+												<span>情</span>
+												<span>况</span>
+												<span>说</span>
+												<span>明：</span>
+											</view>
+										</u-col>
+										<u-col span="8">
+											<view class=" bg-purple-light" style="word-break:break-all">
+												{{passInfo.param1?passInfo.param1:''}}
+											</view>
+										</u-col>
+									</u-row>
+									<u-row justify="space-between" align='top' v-if="passInfo.reportType==2">
+										<u-col span="4">
+											<view class=" bg-purple">
+												<span>情</span>
+												<span>况</span>
+												<span>说</span>
+												<span>明：</span>
+											</view>
+										</u-col>
+										<u-col span="8">
+											<view class=" bg-purple-light" style="word-break:break-all">
+												{{passInfo.param2?passInfo.param2:''}}
+											</view>
+										</u-col>
+									</u-row>
+								</view>
+
+								<view class="footer">
+									<view>东兴市疫情防控指挥部</view>
+									<view>{{ verifyTime}}</view>
+								</view>
+
+							</view>
+
+						</view>
+					</u-list>
+				</swiper-item>
+			</swiper>
+		</uni-swiper-dot>
+		<view>
+			<u-modal :show="show" :title="scanTitle" :content='scanContent' @confirm='scanConfirm'></u-modal>
+		</view>
+		<view>
+			<u-modal :show="show_modal" :title="title_modal" :content='content_modal' :showCancelButton='true'
+				@confirm="confirm" @cancel='cancel'></u-modal>
+		</view>
+
+		<view style="margin-top: 300rpx;">
+			<QrCode cid='qr-2' ref="uQRCodeIn" :size="120" :text="mpWxQr" />
+			<canvas canvas-id="myCanvas" style="width: 720upx; height: 1440upx;" id='canvas'></canvas>
+		</view>
+
+		<u-popup :show="showWARING" mode="center" round='10px' :safeAreaInsetBottom="false"
+			customStyle="width: calc(100% - 40px)" closeIconPos='top-right'>
+			<view class="message">
+				<view :class="waringPrompt=='温馨提示'?'title_sweet': 'title'">{{waringPrompt}}</view>
+				<u-line color="#EEEEEE"></u-line>
+				<view :class="waringPrompt=='温馨提示'?'u-content_sweet': 'u-content'">
+					<u-parse :content="content"></u-parse>
+				</view>
+				<u-line color="#EEEEEE"></u-line>
+				<view style="padding: 30rpx;flex-direction: row;justify-content: center;align-items: center;">
+					<view style="width: 300rpx;">
+						<u-button type="primary" :plain="true" text="我知道了" @click="scanConfirm()"></u-button>
+					</view>
+				</view>
+			</view>
+		</u-popup>
+	</view>
+
+</template>
+<script>
+	import kpsImageCutter from "@/components/ksp-image-cutter/ksp-image-cutter.vue";
+	import QrCode from './components/qrcode/index.vue'
+	import Base64 from "@/components/base64/base64.js";
+	import {
+		mapState
+	} from 'vuex'
+	import {
+		getOpenId,
+		getUserInfo,
+		getUploadToken,
+		updatePortrait,
+		userState,
+		useFamilyState,
+		userScan,
+		getDictType,
+		getCurrDate,
+		userPassandrecordState,getUserInfoById
+	} from '../../common/api.js'
+	import config from '@/common/config'
+	import {
+		authcode
+	} from '@/components/authcode/authcode.js' //这里是目录
+	const qrSuccessAudio = 'https://qiniu.xzlglobal.com/Fjq9EA0rkNLA47h9BxC6Uwoi2r17';
+	const qrErrorAudio = 'https://qiniu.xzlglobal.com/FgEBDuGrdulKvitneuiOgW6DB947';
+
+	const STATE = {
+		NORMAL: 'NORMAL', // 正常
+		DIAGNOSED: 'DIAGNOSED', // 确诊
+		CONTACTS: 'CONTACTS', // 密切接触者
+		SUSPICIOUS_CONTACTS: 'SUSPICIOUS_CONTACTS', // 疑似密切接触者
+	}
+	export default {
+		components: {
+			kpsImageCutter,
+			QrCode
+		},
+		data() {
+			return {
+				sys_sos: [],
+				waringPrompt: '',
+				mpWxQrUrl: '',
+				avatar: '',
+				logo: '',
+				qrSize: uni.upx2px(120),
+				qrSizeCanvas: uni.upx2px(240),
+				mpWxQr: '',
+				userId: null,
+				verifyTime: '',
+				passInfo: {},
+				countdownTime: '00:00:00',
+				dotsStyles: {
+					backgroundColor: 'rgba(83, 200, 249,0.3)',
+					border: '1px rgba(83, 200, 249,0.3) solid',
+					color: '#fff',
+					selectedBackgroundColor: 'rgba(83, 200, 249,0.9)',
+					selectedBorder: '1px rgba(83, 200, 249,0.9) solid'
+				},
+				qrcodeOption: {
+					foreground: {
+						image: {
+							src: '',
+							width: 0.25,
+							height: 0.25,
+							align: ['center', 'center'],
+							anchor: [0, 0]
+						}
+					}
+				},
+				info: 1,
+				current: 0,
+				mode: 'dot',
+				showWARING: false,
+				upload_modal: false,
+				show_modal: false,
+				permit_state: [],
+				content: '',
+				title_modal: '上传头像提示',
+				content_modal: '头像仅限提交一次，请谨慎操作。如因图像不清晰或上传其他图像，导致无法正常进入网格的，后果自负。如出现特殊情况，请联系所属网格管理员后台修改。',
+				title: '东兴市居民电子网格证',
+				scanTitle: '扫码异常提示',
+				scanContent: '',
+				openId: '',
+				portrait: '',
+				qiniuToken: '',
+				fileList4: [],
+				url: '',
+				path: '',
+				dateTime: '',
+				loadingPageData: {
+					// 自定义提示内容
+					loadingText: '',
+					// 自定义图片
+					image: '',
+					// 自定义加载动画模式
+					loadingMode: '',
+					// 自定义背景色
+					bgColor: '#ffffff',
+				},
+				loading: false,
+				show3: false,
+				show2: false,
+				show: false,
+				userInfo: {},
+				userInfoV2: {},
+				actions2: [{
+						name: '代申请',
+					},
+					{
+						name: '申请列表',
+					},
+				],
+				background1: 'https://admin.xzlglobal.com/hsfile/bg_mp_v2.jpg',
+				userState: null,
+				STATE,
+				source: ''
+			}
+		},
+		async onShow() {
+			uni.hideShareMenu()
+			this.openLoadingPage(1)
+			this.showDateClick();
+			// this.getQiniuToken()
+
+		},
+		filters: {
+			idcard(str) {
+				if (!str) return '';
+				if (18 <= str.length) {
+					let leftStr = str.substring(0, 6);
+					let rightStr = str.substring(str.length - 4, str.length);
+
+					let strCon = ''
+					for (let i = 0; i < str.length - 4 - 6; i++) {
+						strCon += '*';
+					}
+					return leftStr + strCon + rightStr;
+				} else if (str.length > 4) {
+					return str.substr(0, str.length - 4) + '****'
+				} else {
+					return str.substr(0, str.length - 1) + '****'
+				}
+				// return val.substr(0, 6) + '********''********' + val.substr(6 + 8, val.length)
+			},
+			phone(val) {
+				if (!val) return '';
+				return val.substr(0, 5) + '******'
+			}
+		},
+		async onLoad({
+			familyIdCard,
+			name,
+			documentType,
+			source,
+			qrResult,
+			userId
+		}) {
+			this.userId = userId
+			this.familyIdCard = familyIdCard;
+			this.propsName = name;
+			this.propsDocumentType = documentType;
+			this.source = source;
+			this.propsQrResult = qrResult;
+			if (familyIdCard) {
+				uni.setNavigationBarTitle({
+					title: '家人电子网格通行证'
+				})
+			}
+
+			await this.getDictType('permit_state');
+			if (this.source === 'scanCodeRegister') {
+				this.getInOutRegister(userId);
+			} else {
+				this.getUserInfoV2();
+			}
+
+		},
+
+		methods: {
+			//查询用户个人识别码
+			async getUserQrImg() {
+				const that = this
+				await this.downloadFileAvatar()
+				await this.downloadFileLogo()
+				setTimeout(function() {
+					console.log("下载二维码临时路径")
+					that.$refs.uQRCodeIn.toTempFilePath({
+						success: res => {
+							that.mpWxQrUrl = res.tempFilePath
+							console.log("二维码临时路径", res.tempFilePath)
+						},
+						fail(err) {
+							resolve(err)
+							console.log('下载二维码临时路径失败error', err)
+						}
+					})
+				}, 50);
+			},
+			downloadFileAvatar() {
+				return new Promise((resolve, reject) => {
+					uni.downloadFile({
+						url: this.userInfo.avatar, //仅为示例，并非真实的资源
+						success: (res) => {
+							if (res.statusCode === 200) {
+								this.avatar = res.tempFilePath
+							}
+							resolve(res)
+						},
+						fail(err) {
+							resolve(err)
+							console.log('头像下载失败error', err)
+						}
+					});
+				})
+			},
+
+			downloadFileLogo() {
+				return new Promise((resolve, reject) => {
+					uni.downloadFile({
+						url: 'https://qiniu.xzlglobal.com/logo1.png', //仅为示例，并非真实的资源
+						success: (res) => {
+							console.log("下载logo", res);
+							if (res.statusCode === 200) {
+								this.logo = res.tempFilePath
+							}
+							resolve(res)
+						},
+						fail(err) {
+							console.log('logo下载失败error', err)
+						}
+					});
+				})
+			},
+
+
+			downloadImg() {
+				const that = this
+				// this.copyFn(that.mpWxQrUrl, '')
+				this.$refs.uQRCodeIn.toTempFilePath({
+					success: res => {
+						that.mpWxQrUrl = res.tempFilePath
+						this.copyFn(res.tempFilePath, '')
+					},
+					fail(err) {
+						uni.$u.toast("下载失败，请稍后再试");
+						console.log('error', err)
+					}
+				})
+			},
+
+			async copyFn(file, content) {
+				uni.showLoading({
+					title: '下载中...',
+					mask: true
+				});
+				let ww, hh;
+
+				const query = uni.createSelectorQuery().in(this);
+				query.select('#canvas').boundingClientRect(data => { //获取canvas-dom
+					ww = data.width; //准确的宽高
+					hh = data.height
+					var ctx = uni.createCanvasContext('myCanvas') //绑定画布
+					ctx.fillStyle = "#fff";
+					ctx.fillRect(0, 0, ww, hh);
+					ctx.setFillStyle('#fff')
+					ctx.drawImage(this.logo, 20, uni.upx2px(60), uni.upx2px(100), uni.upx2px(100)); //填充进图片
+					ctx.drawImage(this.avatar, ww / 2 - this.qrSizeCanvas / 2, uni.upx2px(380), this
+						.qrSizeCanvas, this
+						.qrSizeCanvas); //填充进图片
+					ctx.setFillStyle('#000') //设置内容1的文字样式
+
+					ctx.setTextAlign('left') //设置对于坐标点的对齐方式
+					ctx.font = 'normal bold 18px sans-serif';
+					ctx.setFontSize(uni.upx2px(50));
+					ctx.fillText('东兴市智慧化管理平台', uni.upx2px(160), uni.upx2px(110)) //计算距离，将文字定位于图片的某处
+
+					ctx.font = 'normal 400 15px Arial, sans-serif';
+					ctx.setFontSize(uni.upx2px(40));
+					ctx.setTextAlign('left')
+					ctx.fillText(uni.$u.timeFormat(new Date(), 'yyyy-mm-dd hh:MM:ss'), uni.upx2px(160), uni
+						.upx2px(160))
+					ctx.setFillStyle('#000') //设置内容2的文字样式
+					ctx.font = 'normal 400 15px Arial, sans-serif';
+					ctx.setTextAlign('left')
+					ctx.setFontSize(uni.upx2px(36));
+					ctx.fillText('持', uni.upx2px(40), uni.upx2px(720))
+					ctx.font = 'normal 400 , sans-serif';
+					ctx.setTextAlign('left')
+					ctx.setFontSize(uni.upx2px(36));
+					ctx.fillText('证', uni.upx2px(130), uni.upx2px(720))
+					ctx.font = 'normal 400 15px Arial, sans-serif';
+					ctx.setTextAlign('left')
+					ctx.setFontSize(uni.upx2px(36));
+					ctx.fillText('人：', uni.upx2px(200), uni.upx2px(720))
+					ctx.font = 'normal 400 15px Arial, sans-serif';
+					ctx.setTextAlign('left')
+					ctx.setFontSize(uni.upx2px(36));
+					ctx.fillText('证', uni.upx2px(40), uni.upx2px(780))
+					ctx.font = 'normal 400 15px Arial, sans-serif';
+					ctx.setTextAlign('left')
+					ctx.setFontSize(uni.upx2px(36));
+					ctx.fillText('件', uni.upx2px(90), uni.upx2px(780))
+					ctx.font = 'normal 400 15px Arial, sans-serif';
+					ctx.setTextAlign('left')
+					ctx.setFontSize(uni.upx2px(36));
+					ctx.fillText('号', uni.upx2px(140), uni.upx2px(780))
+					ctx.font = 'normal 400 15px Arial, sans-serif';
+					ctx.setTextAlign('left')
+					ctx.setFontSize(uni.upx2px(36));
+					ctx.fillText('码：', uni.upx2px(200), uni.upx2px(780))
+					ctx.font = 'normal 400 15px Arial, sans-serif';
+					ctx.setTextAlign('left')
+					ctx.setFontSize(uni.upx2px(36));
+					ctx.fillText('电', uni.upx2px(40), uni.upx2px(840))
+					ctx.font = 'normal 400 15px Arial, sans-serif';
+					ctx.setTextAlign('left')
+					ctx.setFontSize(uni.upx2px(36));
+					ctx.fillText('话：', uni.upx2px(200), uni.upx2px(840))
+					ctx.font = 'normal 400 15px Arial, sans-serif';
+					ctx.setTextAlign('left')
+					ctx.setFontSize(uni.upx2px(36));
+					ctx.fillText('住', uni.upx2px(40), uni.upx2px(900))
+					ctx.font = 'normal 400 15px Arial, sans-serif';
+					ctx.setTextAlign('left')
+					ctx.setFontSize(uni.upx2px(36));
+					ctx.fillText('址：', uni.upx2px(200), uni.upx2px(900))
+
+					ctx.font = 'normal bold 18px sans-serif';
+					ctx.setTextAlign('left')
+					ctx.setFontSize(uni.upx2px(36));
+					ctx.fillText(this.userInfo.name, uni.upx2px(280), uni.upx2px(720))
+					ctx.font = 'normal bold 18px sans-serif';
+					ctx.setTextAlign('left')
+					ctx.setFontSize(uni.upx2px(36));
+					ctx.fillText(this.$options.filters.idcard(this.userInfo.idNumber), uni.upx2px(280), uni
+						.upx2px(780))
+					ctx.font = 'normal bold 18px sans-serif';
+					ctx.setTextAlign('left')
+					ctx.setFontSize(uni.upx2px(36));
+					ctx.fillText(this.$options.filters.phone(this.userInfo.phone), uni.upx2px(280), uni.upx2px(
+						840))
+					var addrH = 0
+					if (this.userInfo.addr.length < 11) {
+						ctx.font = 'normal bold 18px sans-serif';
+						ctx.setTextAlign('left')
+						ctx.setFontSize(uni.upx2px(36));
+						ctx.fillText(this.userInfo.addr, uni.upx2px(280), uni.upx2px(900))
+					} else if (this.userInfo.addr.length < 22) {
+						addrH = 50
+						ctx.font = 'normal bold 18px sans-serif';
+						ctx.setTextAlign('left')
+						ctx.setFontSize(uni.upx2px(36));
+						ctx.fillText(this.userInfo.addr.substring(0, 11), uni.upx2px(280), uni.upx2px(900))
+						ctx.font = 'normal bold 18px sans-serif';
+						ctx.setTextAlign('left')
+						ctx.setFontSize(uni.upx2px(36));
+						ctx.fillText(this.userInfo.addr.substring(11, this.userInfo.addr.length), uni.upx2px(
+							280), uni.upx2px(950))
+					} else {
+						addrH = 100
+						ctx.font = 'normal bold 18px sans-serif';
+						ctx.setTextAlign('left')
+						ctx.setFontSize(uni.upx2px(36));
+						ctx.fillText(this.userInfo.addr.substring(0, 11), uni.upx2px(280), uni.upx2px(900))
+						ctx.font = 'normal bold 18px sans-serif';
+						ctx.setTextAlign('left')
+						ctx.setFontSize(uni.upx2px(36));
+						ctx.fillText(this.userInfo.addr.substring(11, 22), uni.upx2px(280), uni.upx2px(950))
+						ctx.font = 'normal bold 18px sans-serif';
+						ctx.setTextAlign('left')
+						ctx.setFontSize(uni.upx2px(36));
+						ctx.fillText(this.userInfo.addr.substring(22, this.userInfo.addr.length), uni.upx2px(
+							280), uni.upx2px(1000))
+					}
+
+					ctx.setFillStyle('red') //设置内容2的文字样式
+					ctx.setFontSize(uni.upx2px(20));
+					ctx.fillText(
+						"__________________________________________________________________________________________________________",
+						uni
+						.upx2px(0), uni.upx2px(940 + addrH))
+
+
+					ctx.setFillStyle('#000') //设置内容2的文字样式
+
+					if (this.userInfo.companyName.length > 14) {
+						ctx.font = 'normal bold 18px sans-serif';
+						ctx.setTextAlign('center')
+						ctx.setFontSize(uni.upx2px(50));
+						ctx.fillText(this.userInfo.companyName.substring(0, 12), ww / 2, uni.upx2px(
+							260)) //计算距离，将文字定位于图片的某处
+						ctx.setTextAlign('center')
+						ctx.setFontSize(uni.upx2px(50));
+						ctx.fillText(this.userInfo.companyName.substring(12, this.userInfo.companyName.length),
+							ww / 2, uni.upx2px(
+								320)) //计算距离，将文字定位于图片的某处
+					} else {
+						ctx.setTextAlign('center')
+						ctx.setFontSize(uni.upx2px(50));
+						ctx.fillText(this.userInfo.companyName, ww / 2, uni.upx2px(300)) //计算距离，将文字定位于图片的某处
+					}
+
+					ctx.drawImage(file, ww / 2 - this.qrSizeCanvas / 2, uni.upx2px(980 + addrH), this
+						.qrSizeCanvas, this
+						.qrSizeCanvas); //填充进图片
+					ctx.setFontSize(uni.upx2px(36));
+					ctx.fillText('个人信息识别码', ww / 2, uni.upx2px(1280 + addrH))
+
+					ctx.draw(); //输出到画布中
+					setTimeout(() => { //不加延迟的话，base64有时候会赋予undefined
+						uni.canvasToTempFilePath({
+							canvasId: 'myCanvas',
+							success: (res) => {
+								this.base64 = res.tempFilePath
+								this.bcFn()
+							},
+							fail(err) {
+								console.log('error', err)
+								uni.hideLoading();
+								uni.$u.toast("下载失败，请稍后再试");
+							}
+						})
+					}, 200)
+				}).exec();
+
+			},
+			changeSlider(e) {
+				this.current = e.target.current
+			},
+			bcFn() {
+				uni.saveImageToPhotosAlbum({ //保存图片
+					filePath: this.base64,
+					success: (res) => {
+						uni.hideLoading();
+						uni.showToast({
+							title: '保存成功',
+							icon: 'success',
+							duration: 1000
+						})
+
+					},
+					fail(err) {
+						uni.hideLoading();
+						uni.$u.toast("下载失败，请稍后再试");
+					}
+				})
+			},
+
+			change(e) {
+				this.current = e.detail.current;
+				if (e.detail.current == 1 && this.passInfo.reportMsg) {
+
+					this.content = this.passInfo.reportMsg
+					this.showWARING = true
+				}
+			},
+			async getDictType(type) {
+				getDictType(type).then(res => {
+					if (res && JSON.stringify(res) !== "{}") {
+						this.permit_state = res;
+					}
+				})
+				getDictType("sys_sos").then(res => {
+					if (res && JSON.stringify(res) !== "{}") {
+						this.sys_sos = res;
+					}
+				})
+			},
+
+			getInOutRegister(userId) {
+				this.getUserInfoV2()
+				const [_1, inOut, _3, spId, _5, _6] = this.propsQrResult.split('-');
+				if (!spId) {
+					this.scanTitle = '扫码异常提示'
+					this.scanContent = '请扫正确的登记二维码'
+					this.show = true
+					playSystemAudio('https://qiniu.xzlglobal.com/FnNJ7c_n2Cv_9y-TkYki0uw-YARj')
+					return
+				}
+
+				userScan({
+					scanUserId: userId && userId != 'null' ? userId : '',
+					isIn: inOut === '1' ? true : false,
+					spId
+				}, {
+					custom: {
+						toast: false,
+						catch: true
+					}
+				}).then(res => {
+					this.userState = res.userState === 0 ? STATE.NORMAL : STATE.DIAGNOSED;
+					if (!this.isPlayAudio) {
+						this.isPlayAudio = true;
+						if (this.userState === STATE.NORMAL) {
+							playSystemAudio(qrSuccessAudio)
+						} else {
+							playSystemAudio(qrErrorAudio)
+						}
+					}
+					if (res.reportValid != -1) {
+						this.info = [1, 2]
+						this.passInfo = {
+							...res,
+							...this.timeDifference(res.startTime, res.endTime)
+						};
+
+						Promise.all([getCurrDate()]).then(([time]) => {
+							this.countdown(time, res.endTime)
+							this.verifyTime = uni.$u.timeFormat(time, 'yyyy-mm-dd')
+						})
+					} else {
+						this.info = 1
+					}
+
+				}).catch(err => {
+					this.scanContent = err.msg
+					this.show = true
+					if (err.code == 500) {
+						playSystemAudio('https://qiniu.xzlglobal.com/FnNJ7c_n2Cv_9y-TkYki0uw-YARj')
+					}
+				})
+
+				function playSystemAudio(src) {
+					const audio = uni.createInnerAudioContext()
+					const destroy = () => audio.destroy()
+					audio.src = src;
+					audio.play();
+					audio.onEnded(destroy)
+					audio.onError(destroy);
+					audio.onStop(destroy);
+					audio.onPause(destroy);
+				}
+			},
+			scanConfirm() {
+				uni.navigateBack({
+					delta: 1
+				});
+			},
+
+			async getUserInfoV2() {
+				var that = this
+				var idNumber = ''
+				if (this.familyIdCard) {
+					await useFamilyState({
+						idNumber: this.familyIdCard,
+						name: this.propsName,
+						documentType: this.propsDocumentType,
+					}).then(res => {
+						this.userInfo = res
+					})
+					idNumber = this.familyIdCard
+				} else {
+					idNumber = this.$store.state.userInfo.idNumber
+					this.userInfo = this.$store.state.userInfo;
+					if(this.$store.state.userInfo && !this.$store.state.userInfo.avatar){
+						await getUserInfoById({
+							params: {
+								userId:that.$store.state.userInfo.id
+							},
+							custom: {
+								toast: true,
+								catch: true
+							}
+						}).then(res => {
+							that.$store.dispatch("setUserInfo", res);
+							that.userInfo = res
+						})
+					}
+				}
+				this.mpWxQr = null
+				let base64 = new Base64()
+				this.mpWxQr = 'userInfo_qr_' + base64.encode(this.userInfo.id.toString()) + "_" + this.randomString(8)
+				if (this.mpWxQr) {
+					this.getUserQrImg()
+				}
+				userPassandrecordState(idNumber).then(res => {
+					if (res.userState != STATE.NORMAL) {
+						if (res.remarks) {
+							var remarks = res.remarks
+							that.waringPrompt = "弹窗警告"
+							this.sys_sos.forEach(t => {
+								if (res.remarks == t.remark) {
+									if (t.dictLabel.indexOf("温馨提示") > -1) {
+										that.waringPrompt = "温馨提示"
+									}
+								}
+							})
+							this.permit_state.forEach(item => {
+								if (res.userStateValue == parseInt(item.dictValue)) {
+									remarks = remarks.replace("%%", item.dictLabel)
+								}
+							})
+
+							this.content = remarks
+							this.showWARING = true
+						}
+					}
+					this.userState = res.userState;
+				})
+			},
+			// setAvatar(avatar) {
+			// 	if (avatar) {
+			// 		this.fileList4 = []
+			// 		this.fileList4.push({
+			// 			url: avatar
+			// 		})
+			// 	}
+			// },
+			//确定
+			confirm() {
+				this.show_modal = false
+				this.upload_modal = true
+			},
+			//关闭
+			cancel() {
+				this.show_modal = false
+				this.upload_modal = false
+			},
+
+			chooseImage() {
+				uni.chooseImage({
+					success: (res) => {
+						this.url = res.tempFilePaths[0]; //剪裁组件显示
+					}
+				});
+			},
+			// onok(ev) {
+			// 	this.path = ev.path; //图片地址
+			// 	this.url = ""; //隐藏组件
+			// 	this.openLoadingPage(3)
+			// 	this.uploadFilePromise(ev.path, 4)
+
+			// },
+			// oncancle() {
+			// 	this.url = "";
+			// },
+
+			// async getQiniuToken() { //获取七牛的uptoken
+			// 	var that = this
+			// 	getUploadToken().then(res => {
+			// 		if (res && JSON.stringify(res) !== "{}") {
+			// 			this.qiniuToken = res
+			// 		}
+
+			// 	}).catch(err => {
+
+			// 	})
+
+			// },
+
+
+			// 删除图片
+			// deletePic(event) {
+			// 	this.url = "";
+			// 	this.path = ""; //图片地址
+			// 	this[`fileList${event.name}`].splice(event.index, 1)
+			// },
+			// 新增图片
+			// async afterRead(event) {
+			// 	this.url = event.file[0].url; //剪裁组件显示
+			// },
+			// //更新头像
+			// updatePortrait(param) {
+			// 	updatePortrait(param).then(res => {
+			// 		if (res && JSON.stringify(res) !== "{}") {
+			// 			uni.showToast({
+			// 				title: '头像更新成功',
+			// 				icon: 'success',
+			// 				duration: 2000
+			// 			});
+			// 		}
+
+			// 	}).catch(err => {
+
+			// 	})
+			// },
+			// uploadFilePromise(url, name) {
+			// 	var that = this
+			// 	return new Promise((resolve, reject) => {
+			// 		let a = uni.uploadFile({
+			// 			url: 'https://upload-z1.qiniup.com/',
+			// 			// url: config.baseUrl + '/wechat/common/upload',
+			// 			filePath: url,
+			// 			name: 'file',
+			// 			formData: {
+			// 				token: that.qiniuToken,
+			// 			},
+			// 			success: (res) => {
+			// 				setTimeout(() => {
+			// 					if (res.data) {
+			// 						var imgData = JSON.parse(res.data);
+			// 						if (name == 4) {
+			// 							that.portrait = config.qiniuUrl + imgData.key
+			// 							// that.fileList4 = []
+			// 							// that.fileList4.push({
+			// 							// 	url: config.qiniuUrl + imgData.key
+			// 							// })
+			// 							// this.setAvatar(that.portrait)
+			// 							that.$store.dispatch('setUserInfo', {
+			// 								...that.$store.state.userInfo,
+			// 								avatar: that.portrait
+			// 							})
+			// 							that.updatePortrait({
+			// 								openId: that.openId,
+			// 								headUrl: that.portrait
+			// 							})
+			// 						}
+			// 						resolve(config.qiniuUrl + imgData.key)
+			// 					}
+			// 				}, 1000)
+			// 			}
+			// 		});
+			// 	})
+			// },
+
+			//开启定时
+			showDateClick() {
+				var that = this
+				setInterval(() => {
+					that.dateTime = that.showDate()
+				}, 1000)
+			},
+			//获取当前时间
+			showDate() {
+				const date = new Date();
+				const year = date.getFullYear();
+				const month = date.getMonth() + 1;
+				const day = date.getDate();
+				const hour = date.getHours();
+				const min = date.getMinutes();
+				const sec = date.getSeconds();
+				var secStr = ''
+				secStr = sec + ''
+				if (sec < 10) {
+					secStr = '0' + secStr
+				}
+				var hourStr = ''
+				hourStr = hour + ''
+				if (hour < 10) {
+					hourStr = '0' + hourStr
+				}
+				var minStr = ''
+				minStr = min + ''
+				if (min < 10) {
+					minStr = '0' + minStr
+				}
+				return year + "年" + month + "月" + day + "日 " + hourStr + ":" + minStr + ":" + secStr;
+
+			},
+
+			// 点击cell，判断显示哪个功能
+			// openSheet() {
+			// 	this.show2 = true
+			// },
+			// navigateBack() {
+			// 	uni.navigateBack()
+			// },
+			// close() {
+			// 	this['show0'] = false
+			// },
+			// select(e) {
+			// 	if (e.name == "代申请") {
+			// 		uni.setStorageSync('generationType', true);
+			// 		uni.navigateTo({
+			// 			// url: '/pages/nucleic/uploadcard?actingType=1',
+			// 			url: '/pages/nucleic/passApply?actingType=1'
+			// 		})
+			// 	} else if (e.name == "申请列表") {
+			// 		uni.navigateTo({
+			// 			url: '/pages/nucleic/family',
+			// 		})
+			// 	}
+
+			// },
+
+			openLoadingPage(sec) {
+				this.loadingPageData = {
+					loadingText: '',
+					image: '',
+					loadingMode: '',
+					bgColor: '#ffffff',
+				}
+				// 自定义背景色
+				this.loadingPageData.loadingMode = 'spinner'
+				this.loadingPageData.bgColor = 'rgba(0, 0, 0, 0.4)'
+				this.loadingPageData.loadingText = "加载中"
+				this.loadingPageData.color = '#eee',
+					this.loading = true
+				setTimeout(() => {
+					this.loading = false
+				}, 1000 * sec)
+			},
+			randomString(length) {
+				return Math.random().toString(36).substring(2).substring(0, length);
+			},
+			timeDifference(date1, date2) {
+				if (date1 && date2) {
+					var nowtime = timeStrToDate(date1); //获取当前时间
+					var endtime = timeStrToDate(date2); //定义结束时间
+					var lefttime = endtime.getTime() - nowtime.getTime();
+					var leftd = Math.floor(lefttime / (1000 * 60 * 60));
+
+					return {
+						startFormatTime: uni.$u.timeFormat(nowtime, 'mm-dd hh:MM'),
+						endFormatTime: uni.$u.timeFormat(endtime, 'mm-dd hh:MM') + '(' + leftd + '小时)',
+					}
+				} else {
+					return {
+						startFormatTime: '',
+						endFormatTime: '',
+					}
+				}
+
+
+			},
+			/**
+			 *
+			 * @param {*} date: Date
+			 */
+			countdown(date1, date2) {
+				if (!date1 || !date2) {
+					return false
+				}
+				var nowtime = timeStrToDate(date1); //获取当前时间
+				var endtime = timeStrToDate(date2); //定义结束时间
+				var lefttime = endtime.getTime() - nowtime.getTime(); //距离结束时间的毫秒数
+
+				if (lefttime <= 0) {
+					this.countdownTime = '00:00:00'
+					this.isExpired = true
+					return
+				}
+
+				var leftd = Math.floor(lefttime / (1000 * 60 * 60 * 24)), //计算天数
+					lefth = Math.floor(lefttime / (1000 * 60 * 60) % 24), //计算小时数
+					leftm = Math.floor(lefttime / (1000 * 60) % 60), //计算分钟数
+					lefts = Math.floor(lefttime / 1000 % 60); //计算秒数
+				this.countdownTime = doubleNumber(lefth + leftd * 24) + ":" + doubleNumber(leftm) + ":" + doubleNumber(
+					lefts); //返回倒计时的字符串
+				nowtime.setSeconds(nowtime.getSeconds() + 1)
+				setTimeout(() => {
+					this.countdown(nowtime, date2)
+				}, 1000)
+			},
+			complete(e, refName) {
+				if (e.success) {
+					console.log(refName + '生成成功');
+				} else {
+					console.log(refName + '生成失败');
+				}
+			},
+			remake(refName) {
+				const ref = this.$refs[refName];
+				/* ref通过v-for遍历后会自动包裹在数组里，所以要判断一下 */
+				if (Array.isArray(ref)) {
+					ref[0].remake();
+				} else {
+					ref.remake();
+				}
+			},
+			save(refName) {
+				uni.showLoading({
+					title: '保存中',
+					mask: true
+				});
+				const ref = this.$refs[refName];
+				/* ref通过v-for遍历后会自动包裹在数组里，所以要判断一下 */
+				if (Array.isArray(ref)) {
+					ref[0].save({
+						success: res => {
+							uni.hideLoading();
+							uni.showToast({
+								icon: 'success',
+								title: '保存成功'
+							});
+						},
+						fail: err => {
+							uni.showToast({
+								icon: 'none',
+								title: JSON.stringify(err)
+							});
+						}
+					});
+				} else {
+					ref.save({
+						success: res => {
+							uni.hideLoading();
+							uni.showToast({
+								icon: 'success',
+								title: '保存成功'
+							});
+						},
+						fail: err => {
+							uni.showToast({
+								icon: 'none',
+								title: JSON.stringify(err)
+							});
+						}
+					});
+				}
+			}
+
+		}
+	}
+
+	function doubleNumber(num) {
+		return num < 10 ? `0${num}` : num
+	}
+
+	function timeStrToDate(time) {
+
+		if (time instanceof Date) {
+			return time
+		}
+		const [year, month, date, hours, minutes, seconds] = time.split(/(-| |:)/g).filter(v => ![' ', '-', ':'].includes(
+			v)).map(v => Number(v))
+		const d = new Date(year, month - 1, date, hours, minutes, seconds)
+		return d
+	}
+</script>
+
+<style lang="scss">
+	.permit_div {
+		position: fixed;
+		width: 100%;
+	}
+
+	.qrcode-box {
+		/* #ifndef APP-NVUE */
+		display: flex;
+		flex-direction: column;
+		/* #endif */
+		align-items: center;
+		margin-bottom: 30px;
+		padding: 0 30px;
+	}
+
+	.qrcode {
+		padding: 10rpx;
+		background-color: #ffffff;
+		// box-shadow: 0 6px 12px rgba(0, 0, 0, 0.1);
+		border-radius: 2px;
+		overflow: hidden;
+	}
+
+	.save {
+		margin-top: 20rpx;
+	}
+
+	.image {
+		width: 200px;
+		height: 200px;
+	}
+
+	.qrcode_DIV {
+		.myself_qr {
+			flex-direction: row;
+			align-items: flex-end;
+			justify-content: center;
+
+			image {
+				width: 300rpx;
+				height: 300rpx;
+			}
+
+		}
+
+		.content {
+			margin-top: 10rpx;
+			font-size: 30rpx;
+			padding-bottom: 30rpx;
+			text-align: center;
+		}
+	}
+
+	.swiper-box {
+		overflow-x: scroll;
+		overflow-y: scroll;
+		height: calc(100vh - 50rpx);
+	}
+
+	page {
+		// background-color: #DDDDDD;
+		background-image: url('https://admin.xzlglobal.com/hsfile/bg_mp.jpg');
+		// background-size: 100% 100%;
+		background-repeat: no-repeat;
+	}
+
+	.u-page {
+		padding: 20px;
+		// height: 100vh;
+		// background-size: 100% 100vh;
+		// background-repeat: no-repeat;
+
+		// &__button-item {
+		// 	margin: 0 15px 15px 0;
+		// }
+	}
+
+
+
+	.u-demo-block__content {
+		padding: 0 30upx;
+		line-height: 60upx;
+		margin-top: 10upx;
+		font-size: 34upx;
+	}
+
+	// .demo-layout {
+	//     height: 25px;
+	//     border-radius: 6px;
+	// }
+
+	.bg-purple {
+		// text-align: right;
+		display: flex;
+		justify-content: space-between;
+		flex-direction: row;
+		color: #333333;
+	}
+
+	.bg-purple-light {
+		word-break: break-all;
+		font-weight: 600;
+	}
+
+	.div_content {
+		background-size: 100% 100%;
+		background-repeat: no-repeat;
+		background-color: #FFFFFF;
+		border-radius: 5px;
+		padding: 30upx;
+		box-shadow: 5px 5px 5px 0 rgba(0, 0, 0, .05);
+		-webkit-box-shadow: #d4d2d2 0px 0px 10px;
+		-moz-box-shadow: #d4d2d2 0px 0px 10px;
+
+		.div_title {
+			flex-direction: row;
+			align-items: flex-end;
+			justify-content: center;
+			margin-top: 30upx;
+
+			image {
+				width: 120upx;
+				height: 120upx;
+			}
+
+			.font_title {
+				font-size: 42upx;
+				font-weight: 700;
+			}
+
+			.font_date {
+				font-size: 38upx;
+			}
+		}
+	}
+
+	.u-demo-block-state {
+		flex-direction: row;
+		align-items: center;
+		justify-content: center;
+
+		image {
+			width: 100upx;
+			height: 100upx;
+		}
+	}
+
+	.div_wangge_name {
+		text-align: center;
+		font-size: 45upx;
+		font-weight: 700;
+		margin-top: 40upx;
+	}
+
+	.message {
+
+		.title {
+			color: red;
+			text-align: center;
+			font-size: 40rpx;
+			font-weight: 700;
+			padding: 30upx 0;
+		}
+
+		.title_sweet {
+			text-align: center;
+			font-size: 40rpx;
+			font-weight: 700;
+			padding: 30upx 0;
+		}
+
+		.u-content {
+			color: red;
+			overflow-y: scroll;
+			padding: 30upx;
+			max-height: 600rpx
+		}
+
+		.u-content_sweet {
+			overflow-y: scroll;
+			padding: 30upx;
+			max-height: 600rpx
+		}
+	}
+
+	.state_name {
+		font-size: 60upx;
+		font-weight: 700;
+	}
+
+	// .bg-purple-dark {
+	//     background: #99a9bf;
+	// }
+
+	.swiper-item-2 {
+		width: 667rpx;
+		margin: 0 auto;
+		height: 1125rpx;
+		margin: 0 auto 30rpx;
+		background: url(@/static/bb_bg.png) no-repeat;
+		background-size: 100% 100%;
+		text-align: center;
+		position: relative;
+
+		.footer {
+			width: 196rpx;
+			height: 196rpx;
+			background: url(@/static/logo1.png) center / 100% 100% no-repeat;
+			position: absolute;
+			bottom: 56rpx;
+			right: 140rpx;
+			white-space: nowrap;
+			text-align: center;
+			transform: translate(0, 0);
+
+			view {
+				position: absolute;
+				left: 50%;
+				transform: translateX(-50%);
+				color: #333333;
+			}
+
+			view:first-child {
+				margin-top: 60rpx;
+				font-weight: bold;
+				font-size: 33rpx;
+			}
+
+			view:last-child {
+				font-size: 29rpx;
+				margin-top: 100rpx;
+			}
+		}
+
+		.title {
+			font-size: 46rpx;
+			color: #333333;
+			padding-top: 92rpx;
+			font-weight: bold;
+		}
+
+		.time {
+			padding: 52rpx 0;
+			font-size: 38rpx;
+			color: #4CCD56;
+		}
+
+		.p {
+			text-align: left;
+			padding: 0 70rpx;
+			display: flex;
+			color: #333333;
+			font-size: 29rpx;
+			margin-bottom: 10rpx;
+			line-height: 50rpx;
+
+			.label {
+				width: 157rpx;
+				padding-right: 20rpx;
+				flex-shrink: 0;
+				text-align: justify;
+				position: relative;
+				height: 30rpx;
+
+				&::after {
+					content: '';
+					display: inline-block;
+					width: 100%;
+				}
+
+				&::before {
+					content: ':';
+					position: absolute;
+					right: 14rpx;
+				}
+			}
+		}
+
+		.expired {
+			width: 500rpx;
+			height: 258rpx;
+			background: #FFFFFF;
+			box-shadow: 0px 0px 21rpx 0rpx rgba(0, 0, 0, 0.1);
+			border-radius: 21rpx;
+			border: 2rpx solid #EEEEEE;
+			position: absolute;
+			left: 50%;
+			top: 50%;
+			transform: translate(-50%, -50%);
+
+			._title {
+				color: #DA0303;
+				font-size: 33rpx;
+				font-weight: bold;
+				padding: 25rpx 0;
+				text-align: center;
+				border-bottom: 2rpx solid #EEEEEE;
+			}
+
+			._content {
+				padding-top: 35rpx;
+
+				button {
+					width: 258rpx;
+					margin: 0 auto;
+					line-height: 92rpx;
+					background: #3A8CF0;
+					border-radius: 21rpx;
+					text-align: center;
+					font-size: 31rpx;
+					color: #fff;
+				}
+			}
+		}
+	}
+</style>

@@ -1,0 +1,466 @@
+<template>
+	<view>
+		<view class="swiper-item">
+			<view class="u-page">
+				<view  >
+					<view class="div_content ">
+						<view style="align-items: center; padding: 30rpx;margin-top: 50rpx;">
+							<view style="margin-left: 16rpx;pointer-events: none;">
+								<image 
+									:src="userInfo.avatar" style="width: 240rpx;height:240rpx; border-radius:5px">
+								</image>
+							</view>
+						</view>
+						<view class="u-demo-block" style="margin-top: 20upx;">
+							<view class="u-demo-block__content">
+								<u-row justify="space-between">
+									<u-col span="4">
+										<view class=" bg-purple">
+											<span>持</span>
+											<span>证</span>
+											<span>人：</span>
+										</view>
+									</u-col>
+									<u-col span="8">
+										<view class=" bg-purple-light">{{userInfo.name}}</view>
+									</u-col>
+								</u-row>
+								<u-row justify="space-between">
+									<u-col span="4">
+										<view class=" bg-purple">
+											<span>证</span>
+											<span>件</span>
+											<span>号</span>
+											<span>码：</span>
+										</view>
+									</u-col>
+									<u-col span="8">
+										<view class=" bg-purple-light">{{userInfo.idNumber | idcard}}</view>
+									</u-col>
+								</u-row>
+								<u-row justify="space-between">
+									<u-col span="4">
+										<view class=" bg-purple">
+											<span>电</span>
+											<span>话：</span>
+										</view>
+									</u-col>
+									<u-col span="8">
+										<view class=" bg-purple-light">{{userInfo.phone|phone}}</view>
+									</u-col>
+								</u-row>
+								<u-row justify="space-between" align='top'>
+									<u-col span="4">
+										<view class=" bg-purple">
+											<span>社</span>
+											<span>区</span>
+											<span>/</span>
+											<span>网</span>
+											<span>格：</span>
+										</view>
+									</u-col>
+									<u-col span="8">
+										<view class=" bg-purple-light" style="word-break:break-all">
+											{{userInfo.companyName?userInfo.companyName:""}}
+										</view>
+									</u-col>
+								</u-row>
+								
+							</view>
+						</view>
+						
+						
+					</view>
+					
+					<view class="saoma">
+						<u-button v-if="userInfo && userInfo.id" type="primary" @click="toPermit()" text="请扫商区登记码"></u-button>
+					</view>
+					<u-loading-page :loadingText="loadingPageData.loadingText" :image="loadingPageData.image"
+						:loadingMode="loadingPageData.loadingMode" :bgColor="loadingPageData.bgColor" :loading="loading"
+						:color="loadingPageData.color" :loadingColor="loadingPageData.loadingColor">
+					</u-loading-page>
+				</view>
+				
+			</view>
+		</view>
+		
+
+	</view>
+
+</template>
+<script>
+	import {
+		getUserInfoById,
+	} from '../../common/api.js'
+	import config from '@/common/config'
+	export default {
+		data() {
+			return {
+				loadingPageData: {
+					// 自定义提示内容
+					loadingText: '加载中',
+					// 自定义图片
+					image: '',
+					// 自定义加载动画模式
+					loadingMode: 'spinner',
+					// 自定义背景色
+					bgColor: 'rgba(0, 0, 0, 0.4)',
+					color:'#eee'
+				},
+				loading: false,
+				show3: false,
+				show2: false,
+				show: false,
+				userInfo: {},
+				userInfoV2: {},
+
+			}
+		},
+		async onShow() {
+
+			uni.hideShareMenu()
+			this.openLoadingPage(1)
+
+		},
+		filters: {
+			idcard(str) {
+				if (!str) return '';
+				if (18 <= str.length) {
+					let leftStr = str.substring(0, 6);
+					let rightStr = str.substring(str.length - 4, str.length);
+				
+					let strCon = ''
+					for (let i = 0; i < str.length - 4 - 6; i++) {
+						strCon += '*';
+					}
+					return leftStr + strCon + rightStr;
+				} else if (str.length > 4) {
+					return str.substr(0, str.length - 4) + '****'
+				} else {
+					return str.substr(0, str.length - 1) + '****'
+				}
+			},
+			phone(val) {
+				if (!val) return '';
+				return val.substr(0, 5) + '******'
+			}
+		},
+		async onLoad(option) {
+			console.log(option)
+			if(option){
+				if(option.scene){
+					getUserInfoById({
+						params: {
+							userId: option.scene
+						},
+						custom: {
+							toast: true,
+							catch: true
+						}
+					}).then(res => {
+						this.userInfo = res
+					})
+				}
+			}
+
+		},
+
+		methods: {
+			toPermit(){
+				var userInfo = this.userInfo
+				uni.scanCode({
+					success(res) {
+						
+						uni.navigateTo({
+							url: `/pages/nucleic/permit?source=scanCodeRegister&documentType=${userInfo.documentType}&name=${userInfo.name}&familyIdCard=${userInfo.idNumber}` +
+								'&qrResult=' +
+								res.result + '&userId=' +  userInfo.id 
+						})
+					},
+					fail(err) {
+						if (err.errMsg.indexOf('cancel') != -1) {
+							return;
+						}
+						uni.showToast({
+							title: '无效的二维码',
+							icon: 'none'
+						})
+					}
+				})
+			},
+			
+			openLoadingPage(sec) {
+				this.loadingPageData = {
+					loadingText: '',
+					image: '',
+					loadingMode: '',
+					bgColor: '#ffffff',
+				}
+				// 自定义背景色
+				this.loadingPageData.loadingMode = 'spinner'
+				this.loadingPageData.bgColor = 'rgba(0, 0, 0, 0.4)'
+				this.loadingPageData.loadingText = "加载中"
+				this.loadingPageData.color = '#eee',
+					this.loading = true
+				setTimeout(() => {
+					this.loading = false
+				}, 1000 * sec)
+			},
+
+
+
+		}
+	}
+
+	
+</script>
+
+<style lang="scss">
+	.image {
+		width: 200px;
+		height: 200px;
+	}
+
+	.swiper-box {
+		height: calc(100vh - 50rpx);
+	}
+
+	page {
+		// background-color: #DDDDDD;
+		background-image: url('https://qiniu.xzlglobal.com/txm_bg.png');
+		background-size: 100% 100%;
+		background-repeat: no-repeat;
+	}
+
+	.u-page {
+		padding: 20px;
+	
+	}
+
+	.u-demo-block {
+		flex: 1;
+		padding: 0 40rpx;
+		margin-bottom: 50rpx;
+	}
+
+	.u-demo-block__content {
+		padding: 0 30upx;
+		line-height: 60upx;
+		margin-top: 20upx;
+		font-size: 34upx;
+
+	}
+
+
+	.bg-purple {
+		// text-align: right;
+		display: flex;
+		justify-content: space-between;
+		flex-direction: row;
+		color: #333333;
+	}
+
+	.bg-purple-light {
+		text-align: right;
+		word-break: break-all;
+		font-weight: 600;
+	}
+	.saoma{
+		padding: 30prx;
+		margin-top: 50rpx;
+	}
+
+	.div_content {
+
+		background-color: #FFFFFF;
+		border-radius: 5px;
+		// padding: 30upx;
+		box-shadow: 5px 5px 5px 0 rgba(0, 0, 0, .05);
+		-webkit-box-shadow: #d4d2d2 0px 0px 10px;
+		-moz-box-shadow: #d4d2d2 0px 0px 10px;
+
+		.div_title {
+			flex-direction: row;
+			align-items: flex-end;
+			justify-content: center;
+			
+
+			image {
+				width: 120upx;
+				height: 120upx;
+			}
+
+			.font_title {
+				font-size: 42upx;
+				font-weight: 700;
+			}
+
+			.font_date {
+				font-size: 38upx;
+			}
+		}
+	}
+
+	.u-demo-block-state {
+		flex-direction: row;
+		align-items: center;
+		justify-content: center;
+
+		image {
+			width: 100upx;
+			height: 100upx;
+		}
+	}
+
+	.div_wangge_name {
+		text-align: center;
+		font-size: 60upx;
+		font-weight: 700;
+		margin-top: 30upx;
+	}
+
+	.message {
+
+		.title {
+			color: red;
+			text-align: center;
+			font-size: 40rpx;
+			font-weight: 700;
+			padding: 30upx 0;
+		}
+
+		.u-content {
+			color: red;
+			overflow-y: scroll;
+			padding: 30upx;
+			max-height: 600rpx
+		}
+	}
+
+	.state_name {
+		font-size: 60upx;
+		font-weight: 700;
+	}
+
+	.swiper-item-2 {
+		width: 667rpx;
+		margin: 0 auto;
+		height: 1125rpx;
+		margin: 0 auto 30rpx;
+		background: url(@/static/bb_bg.png) no-repeat;
+		background-size: 100% 100%;
+		text-align: center;
+		position: relative;
+
+		.footer {
+			width: 196rpx;
+			height: 196rpx;
+			background: url(@/static/logo1.png) center / 100% 100% no-repeat;
+			position: absolute;
+			bottom: 56rpx;
+			right: 140rpx;
+			white-space: nowrap;
+			text-align: center;
+			transform: translate(0, 0);
+
+			view {
+				position: absolute;
+				left: 50%;
+				transform: translateX(-50%);
+				color: #333333;
+			}
+
+			view:first-child {
+				margin-top: 60rpx;
+				font-weight: bold;
+				font-size: 33rpx;
+			}
+
+			view:last-child {
+				font-size: 29rpx;
+				margin-top: 100rpx;
+			}
+		}
+
+		.title {
+			font-size: 46rpx;
+			color: #333333;
+			padding-top: 92rpx;
+			font-weight: bold;
+		}
+
+		.time {
+			padding: 52rpx 0;
+			font-size: 38rpx;
+			color: #4CCD56;
+		}
+
+		.p {
+			text-align: left;
+			padding: 0 70rpx;
+			display: flex;
+			color: #333333;
+			font-size: 29rpx;
+			margin-bottom: 10rpx;
+			line-height: 50rpx;
+
+			.label {
+				width: 157rpx;
+				padding-right: 20rpx;
+				flex-shrink: 0;
+				text-align: justify;
+				position: relative;
+				height: 30rpx;
+
+				&::after {
+					content: '';
+					display: inline-block;
+					width: 100%;
+				}
+
+				&::before {
+					content: ':';
+					position: absolute;
+					right: 14rpx;
+				}
+			}
+		}
+
+		.expired {
+			width: 500rpx;
+			height: 258rpx;
+			background: #FFFFFF;
+			box-shadow: 0px 0px 21rpx 0rpx rgba(0, 0, 0, 0.1);
+			border-radius: 21rpx;
+			border: 2rpx solid #EEEEEE;
+			position: absolute;
+			left: 50%;
+			top: 50%;
+			transform: translate(-50%, -50%);
+
+			._title {
+				color: #DA0303;
+				font-size: 33rpx;
+				font-weight: bold;
+				padding: 25rpx 0;
+				text-align: center;
+				border-bottom: 2rpx solid #EEEEEE;
+			}
+
+			._content {
+				padding-top: 35rpx;
+
+				button {
+					width: 258rpx;
+					margin: 0 auto;
+					line-height: 92rpx;
+					background: #3A8CF0;
+					border-radius: 21rpx;
+					text-align: center;
+					font-size: 31rpx;
+					color: #fff;
+				}
+			}
+		}
+	}
+</style>

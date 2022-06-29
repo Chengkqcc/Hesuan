@@ -1,0 +1,1009 @@
+<template>
+	<view>
+		<view class="content">
+			<kps-image-cutter v-if="url!=null && url!=''" @ok="onok" @cancel="oncancle" :url="url" :fixed="true"
+				:width="400" :height="400">
+			</kps-image-cutter>
+		</view>
+		<view class="swiper-item">
+			<view class="u-page">
+				<view  v-if='userProfession!=null' :class="userProfession==10 ? 'txz_div': userProfession==11?'gzz_div':'zf_div' ">
+					<view class="div_content ">
+						<view class="gzz">
+							<view class="div_title">
+								<view style="padding-right: 20upx;">
+									<image src="../../static/logo1.png"></image>
+								</view>
+								<view style='flex-shrink: 1;text-align: center;'>
+									<text class="font_title">东兴市智慧化管理平台</text>
+									<text class="font_date">{{dateTime}}</text>
+								</view>
+							</view>
+							<view>
+								<text class="div_wangge_name" v-if='userProfession!=null'>
+								{{userProfession==10 ? '往来通勤证': userProfession==11?'企业员工证':'公务人员证'}}</text>
+							</view>
+						</view>
+						<view style="align-items: center; padding: 14px;">
+							<image src="../../static/head_gif@2x.gif" style="width: 270rpx;height: 270rpx;">
+							</image>
+							<view style="margin-top: -254rpx;margin-left: 0rpx;pointer-events: none;">
+								<image
+									:src="userInfo.avatar" style="width: 240rpx;height:240rpx; border-radius:5px">
+								</image>
+								<!-- <image v-if="!upload_modal && fileList4.length==0" @click="show_modal = true"
+									src="../../static/user_imge.png" style="width: 240rpx;height: 240rpx;">
+								</image>
+								<u-upload v-else width='240rpx' height='240rpx' :fileList="fileList4" @afterRead="afterRead"
+									:deletable="false" @delete="deletePic" name="4" multiple :maxCount="1">
+									<image src="../../static/user_imge.png" style="width: 240rpx;height: 240rpx;"></image>
+								</u-upload> -->
+							</view>
+						</view>
+						<view class="u-demo-block" >
+							<view class="u-demo-block-state" >
+								<!-- <view style="padding-right: 20upx;">
+									<image v-if="userState && userState == STATE.NORMAL" src="../../static/icon_yes.png">
+									</image>
+									<image v-if="userState && userState != STATE.NORMAL" src="../../static/icon_nonono.png">
+									</image>
+								</view> -->
+								<view style='flex-shrink: 1;' v-if="source === 'scanCodeRegister'">
+									<text v-if="userState && userState == STATE.NORMAL" style="color:#4CCD56; "
+										class="state_name">可凭此证快速通行</text>
+									<text v-if="userState && userState != STATE.NORMAL" style="color:#D23535 ;"
+										class="state_name">扫码异常禁止通行</text>
+								</view>
+								<view style='flex-shrink: 1;' v-else>
+									<text v-if="userState && userState == STATE.NORMAL" style="color:#4CCD56; "
+										class="state_name">可凭此证快速通行</text>
+									<text v-if="userState && userState != STATE.NORMAL" style="color:#D23535 ;"
+										class="state_name">禁止通行</text>
+								</view>
+							</view>
+					
+							<view class="u-demo-block__content">
+								<u-row justify="space-between">
+									<u-col span="4">
+										<view class=" bg-purple">
+											<span>持</span>
+											<span>证</span>
+											<span>人：</span>
+										</view>
+									</u-col>
+									<u-col span="8">
+										<view class=" bg-purple-light">{{userInfo.name}}</view>
+									</u-col>
+								</u-row>
+								<u-row justify="space-between">
+									<u-col span="4">
+										<view class=" bg-purple">
+											<span>证</span>
+											<span>件</span>
+											<span>号</span>
+											<span>码：</span>
+										</view>
+									</u-col>
+									<u-col span="8">
+										<view class=" bg-purple-light">{{userInfo.idNumber | idcard}}</view>
+									</u-col>
+								</u-row>
+								<u-row justify="space-between">
+									<u-col span="4">
+										<view class=" bg-purple">
+											<span>电</span>
+											<span>话：</span>
+										</view>
+									</u-col>
+									<u-col span="8">
+										<view class=" bg-purple-light">{{userInfo.phone|phone}}</view>
+									</u-col>
+								</u-row>
+								<u-row justify="space-between" align='top'>
+									<u-col span="4">
+										<view class=" bg-purple">
+											<span>社</span>
+											<span>区</span>
+											<span>/</span>
+											<span>网</span>
+											<span>格：</span>
+										</view>
+									</u-col>
+									<u-col span="8">
+										<view class=" bg-purple-light" style="word-break:break-all">
+											{{userInfo.companyName}}
+										</view>
+									</u-col>
+								</u-row>
+								
+							</view>
+						</view>
+						<view class="qrcode_DIV" >
+							<view v-if="userProfession==11 || userProfession==9">
+								<view class='content'>仅限本人使用</view>
+							</view> 
+							
+							<view style="padding: 20rpx 40rpx;" >
+								<u-line :color="userProfession==9?'#FFB658':'#EEEEEE'" ></u-line>
+							</view>
+					
+							<view class="myself_qr" v-if="mpWxQr">
+								<view class="qrcode-box">
+									<view style="border: 2rpx solid #DDDDDD;">
+										<QrCode cid='qr-2' ref="uQRCodeIn" :size="120" :text="mpWxQr" />
+									</view>
+									
+									<text class="msg">个人信息识别码</text>
+								</view>
+							</view>
+						</view>
+						
+						
+						 <view class="txz_img" v-if="userProfession==10">
+							<image src="https://qiniu.xzlglobal.com/tqz_bg2.png" mode=""></image>
+						</view>
+						 <view class="gzz_img" v-if="userProfession==11">
+							<view class='border_div'></view>
+						</view> 
+						<view class="gzz_img" v-if="userProfession==9">
+							<view class='border_div'>
+								<image src="https://qiniu.xzlglobal.com/work_bg1-2.png" mode=""></image>
+							</view>
+						</view>
+						
+					</view>
+					<u-loading-page :loadingText="loadingPageData.loadingText" :image="loadingPageData.image"
+						:loadingMode="loadingPageData.loadingMode" :bgColor="loadingPageData.bgColor" :loading="loading"
+						:color="loadingPageData.color" :loadingColor="loadingPageData.loadingColor">
+					</u-loading-page>
+				</view>
+				
+			</view>
+		</view>
+		<view>
+			<u-modal :show="show" :title="scanTitle" :content='scanContent' @confirm='scanConfirm'></u-modal>
+		</view>
+		<view>
+			<u-modal :show="show_modal" :title="title_modal" :content='content_modal' :showCancelButton='true'
+				@confirm="confirm" @cancel='cancel'></u-modal>
+		</view>
+		
+
+	</view>
+
+</template>
+<script>
+	import kpsImageCutter from "@/components/ksp-image-cutter/ksp-image-cutter.vue";
+	import QrCode from './components/qrcode/index.vue';
+	import Base64 from "@/components/base64/base64.js";
+	import {
+		mapState
+	} from 'vuex'
+	import {
+		getOpenId,
+		getUserInfo,
+		getUploadToken,
+		updatePortrait,
+		userState,
+		useFamilyState,
+		userScan,
+		getDictType,
+		getCurrDate,
+		userPassandrecordState
+	} from '../../common/api.js'
+	import config from '@/common/config'
+	const qrSuccessAudio = 'https://qiniu.xzlglobal.com/Fjq9EA0rkNLA47h9BxC6Uwoi2r17';
+	const qrErrorAudio = 'https://qiniu.xzlglobal.com/FgEBDuGrdulKvitneuiOgW6DB947';
+
+	const STATE = {
+		NORMAL: 'NORMAL', // 正常
+		DIAGNOSED: 'DIAGNOSED', // 确诊
+		CONTACTS: 'CONTACTS', // 密切接触者
+		SUSPICIOUS_CONTACTS: 'SUSPICIOUS_CONTACTS', // 疑似密切接触者
+	}
+	export default {
+		components: {
+			kpsImageCutter,QrCode
+		},
+		data() {
+			return {
+				mpWxQrUrl: '',
+				mpWxQr: '',
+				userProfession:null,
+				verifyTime: '',
+				passInfo: {},
+				countdownTime: '00:00:00',
+				dotsStyles: {
+					backgroundColor: 'rgba(83, 200, 249,0.3)',
+					border: '1px rgba(83, 200, 249,0.3) solid',
+					color: '#fff',
+					selectedBackgroundColor: 'rgba(83, 200, 249,0.9)',
+					selectedBorder: '1px rgba(83, 200, 249,0.9) solid'
+				},
+				info: 1,
+				current: 0,
+				mode: 'dot',
+				showWARING: false,
+				upload_modal: false,
+				show_modal: false,
+				permit_state: [],
+				content: '',
+				title_modal: '上传头像提示',
+				content_modal: '头像仅限提交一次，请谨慎操作。如因图像不清晰或上传其他图像，导致无法正常进入网格的，后果自负。如出现特殊情况，请联系所属网格管理员后台修改。',
+				title: '东兴市居民电子网格证',
+				scanTitle: '扫码异常提示',
+				scanContent: '',
+				openId: '',
+				portrait: '',
+				qiniuToken: '',
+				fileList4: [],
+				url: '',
+				path: '',
+				dateTime: '',
+				loadingPageData: {
+					// 自定义提示内容
+					loadingText: '',
+					// 自定义图片
+					image: '',
+					// 自定义加载动画模式
+					loadingMode: '',
+					// 自定义背景色
+					bgColor: '#ffffff',
+				},
+				loading: false,
+				show3: false,
+				show2: false,
+				show: false,
+				userInfo: {},
+				userInfoV2: {},
+
+				background1: 'https://admin.xzlglobal.com/hsfile/bg_mp_v2.jpg',
+
+				userState: null,
+				STATE,
+				source: ''
+			}
+		},
+		async onShow() {
+
+			uni.hideShareMenu()
+			this.openLoadingPage(1)
+			this.showDateClick();
+			this.getQiniuToken()
+
+		},
+		filters: {
+			idcard(val) {
+				if (!val) return '';
+				return val.substr(0, 6) + '********' + val.substr(6 + 8, val.length)
+			},
+			phone(val) {
+				if (!val) return '';
+				return val.substr(0, 5) + '******'
+			}
+		},
+		async onLoad({
+			familyIdCard,
+			name,
+			documentType,
+			source,
+			qrResult,
+			userId,
+			userProfession
+		}) {
+			this.userProfession = userProfession
+			if(userProfession && 10==userProfession){
+				uni.setNavigationBarTitle({
+					title: '通勤证'
+				})
+			}else{
+				if (familyIdCard) {
+					uni.setNavigationBarTitle({
+						title: '家人通勤证'
+					})
+				}
+			}
+			this.familyIdCard = familyIdCard;
+			this.propsName = name;
+			this.propsDocumentType = documentType;
+			this.source = source;
+			this.propsQrResult = qrResult;
+			
+
+			await this.getDictType('permit_state');
+			if (this.source === 'scanCodeRegister') {
+				this.getInOutRegister(userId);
+			} else {
+				this.getUserInfoV2();
+			}
+
+		},
+
+		methods: {
+			change(e) {
+				console.log(e.detail.current)
+				this.current = e.detail.current;
+				if (e.detail.current == 1 && this.passInfo.reportMsg) {
+					this.content = this.passInfo.reportMsg
+					this.showWARING = true
+				}
+			},
+			async getDictType(type) {
+				getDictType(type).then(res => {
+					if (res && JSON.stringify(res) !== "{}") {
+						console.log(res)
+						this.permit_state = res;
+					}
+				})
+			},
+
+			getInOutRegister(userId) {
+				this.getUserInfoV2()
+				const [_1, inOut, _3, spId, _5, _6] = this.propsQrResult.split('-');
+				if (!spId) {
+					this.scanTitle = '扫码异常提示'
+					this.scanContent = '请扫正确的登记二维码'
+					this.show = true
+					playSystemAudio('https://qiniu.xzlglobal.com/FnNJ7c_n2Cv_9y-TkYki0uw-YARj')
+					return
+				}
+
+				userScan({
+					scanUserId: userId && userId != 'null' ? userId : '',
+					isIn: inOut === '1' ? true : false,
+					spId
+				}, {
+					custom: {
+						toast: false,
+						catch: true
+					}
+				}).then(res => {
+					this.userState = res.userState === 0 ? STATE.NORMAL : STATE.DIAGNOSED;
+					if (!this.isPlayAudio) {
+						this.isPlayAudio = true;
+						if (this.userState === STATE.NORMAL) {
+							playSystemAudio(qrSuccessAudio)
+						} else {
+							playSystemAudio(qrErrorAudio)
+						}
+					}
+				}).catch(err => {
+					console.log(err)
+					this.scanContent = err.msg
+					this.show = true
+					if (err.code == 500) {
+						playSystemAudio('https://qiniu.xzlglobal.com/FnNJ7c_n2Cv_9y-TkYki0uw-YARj')
+					}
+				})
+
+				function playSystemAudio(src) {
+					const audio = uni.createInnerAudioContext()
+					const destroy = () => audio.destroy()
+					audio.src = src;
+					audio.play();
+					audio.onEnded(destroy)
+					audio.onError(destroy);
+					audio.onStop(destroy);
+					audio.onPause(destroy);
+				}
+			},
+			scanConfirm() {
+				uni.navigateBack({
+					delta: 1
+				});
+			},
+
+			async getUserInfoV2() {
+				var idNumber = ''
+				if (this.familyIdCard) {
+					await useFamilyState({
+						idNumber: this.familyIdCard,
+						name: this.propsName,
+						documentType: this.propsDocumentType,
+					}).then(res => {
+						this.userInfo = res
+						this.setAvatar(res.avatar)
+						this.userState = res.userState;
+					})
+					idNumber = this.familyIdCard
+				} else {
+					idNumber = this.$store.state.userInfo.idNumber
+					this.userInfo = this.$store.state.userInfo;
+				}
+				this.mpWxQr = null
+				let base64 = new Base64()
+				this.mpWxQr = 'userInfo_qr_' + base64.encode(this.userInfo.id.toString())+"_"+this.randomString(8)
+				
+				// if (this.mpWxQr) {
+				// 	this.getUserQrImg()
+				// }
+				
+				userPassandrecordState(idNumber).then(res => {
+					this.setAvatar(this.userInfo.avatar)
+					if (res.userState != STATE.NORMAL) {
+						if (res.remarks) {
+							var remarks = res.remarks
+							this.permit_state.forEach(item => {
+								if (res.userStateValue == parseInt(item.dictValue)) {
+									remarks = remarks.replace("%%", item.dictLabel)
+								}
+							})
+							this.content = remarks
+							this.showWARING = true
+						}
+					}
+					this.userState = res.userState;
+				})
+			},
+			
+			randomString(length) {
+				return Math.random().toString(36).substring(2).substring(0, length);
+			},
+			//查询用户个人识别码
+			async getUserQrImg() {
+				const that = this
+				setTimeout(function() {
+					console.log("下载二维码临时路径")
+					that.$refs.uQRCodeIn.toTempFilePath({
+						success: res => {
+							that.mpWxQrUrl = res.tempFilePath
+							console.log("二维码临时路径", res.tempFilePath)
+						},
+						fail(err) {
+							resolve(err)
+							console.log('下载二维码临时路径失败error', err)
+						}
+					})
+				}, 50);
+			
+			},
+			
+			setAvatar(avatar) {
+				if (avatar) {
+					this.fileList4 = []
+					this.fileList4.push({
+						url: avatar
+					})
+				}
+			},
+			//确定
+			confirm() {
+				this.show_modal = false
+				this.upload_modal = true
+			},
+			//关闭
+			cancel() {
+				this.show_modal = false
+				this.upload_modal = false
+			},
+
+			chooseImage() {
+				uni.chooseImage({
+					success: (res) => {
+						this.url = res.tempFilePaths[0]; //剪裁组件显示
+					}
+				});
+			},
+			onok(ev) {
+				this.path = ev.path; //图片地址
+				this.url = ""; //隐藏组件
+				this.openLoadingPage(3)
+				this.uploadFilePromise(ev.path, 4)
+
+			},
+			oncancle() {
+				this.url = "";
+			},
+
+			async getQiniuToken() { //获取七牛的uptoken
+				var that = this
+				getUploadToken().then(res => {
+					if (res && JSON.stringify(res) !== "{}") {
+						this.qiniuToken = res
+					}
+
+				}).catch(err => {
+
+				})
+
+			},
+			//更新头像
+			updatePortrait(param) {
+				updatePortrait(param).then(res => {
+					if (res && JSON.stringify(res) !== "{}") {
+						uni.showToast({
+							title: '头像更新成功',
+							icon: 'success',
+							duration: 2000
+						});
+					}
+
+				}).catch(err => {
+
+				})
+			},
+
+			// 删除图片
+			deletePic(event) {
+				this.url = "";
+				this.path = ""; //图片地址
+				this[`fileList${event.name}`].splice(event.index, 1)
+			},
+			// 新增图片
+			async afterRead(event) {
+				this.url = event.file[0].url; //剪裁组件显示
+			},
+
+			uploadFilePromise(url, name) {
+				var that = this
+				return new Promise((resolve, reject) => {
+					let a = uni.uploadFile({
+						url: 'https://upload-z1.qiniup.com/',
+						filePath: url,
+						name: 'file',
+						formData: {
+							token: that.qiniuToken,
+						},
+						success: (res) => {
+							console.log(res)
+							setTimeout(() => {
+								if (res.data) {
+									var imgData = JSON.parse(res.data);
+									if (name == 4) {
+										that.portrait = config.qiniuUrl + imgData.key
+										that.fileList4 = []
+										that.fileList4.push({
+											url: config.qiniuUrl + imgData.key
+										})
+										this.setAvatar(that.portrait)
+										that.$store.dispatch('setUserInfo', {
+											...that.$store.state.userInfo,
+											avatar: that.portrait
+										})
+										that.updatePortrait({
+											openId: that.openId,
+											headUrl: that.portrait
+										})
+									}
+									resolve(config.qiniuUrl + imgData.key)
+								}
+							}, 1000)
+						}
+					});
+				})
+			},
+
+			//开启定时
+			showDateClick() {
+				var that = this
+				setInterval(() => {
+					that.dateTime = that.showDate()
+
+					// window.localStorage.setItem('date',JSON.stringify(a))
+				}, 1000)
+			},
+			//获取当前时间
+			showDate() {
+				const date = new Date();
+				const year = date.getFullYear();
+				const month = date.getMonth() + 1;
+				const day = date.getDate();
+				const hour = date.getHours();
+				const min = date.getMinutes();
+				const sec = date.getSeconds();
+				var secStr = ''
+				secStr = sec + ''
+				if (sec < 10) {
+					secStr = '0' + secStr
+				}
+				var hourStr = ''
+				hourStr = hour + ''
+				if (hour < 10) {
+					hourStr = '0' + hourStr
+				}
+				var minStr = ''
+				minStr = min + ''
+				if (min < 10) {
+					minStr = '0' + minStr
+				}
+				return year + "年" + month + "月" + day + "日 " + hourStr + ":" + minStr + ":" + secStr;
+
+			},
+
+
+			navigateBack() {
+				uni.navigateBack()
+			},
+			close() {
+				console.log('close');
+				this['show0'] = false
+			},
+
+
+			openLoadingPage(sec) {
+				this.loadingPageData = {
+					loadingText: '',
+					image: '',
+					loadingMode: '',
+					bgColor: '#ffffff',
+				}
+				// 自定义背景色
+				this.loadingPageData.loadingMode = 'spinner'
+				this.loadingPageData.bgColor = 'rgba(0, 0, 0, 0.4)'
+				this.loadingPageData.loadingText = "加载中"
+				this.loadingPageData.color = '#eee',
+					this.loading = true
+				setTimeout(() => {
+					this.loading = false
+				}, 1000 * sec)
+			},
+
+
+
+		}
+	}
+
+	function doubleNumber(num) {
+		return num < 10 ? `0${num}` : num
+	}
+</script>
+
+<style lang="scss">
+	.qrcode_DIV {
+		.myself_qr {
+			flex-direction: row;
+			align-items: flex-end;
+			justify-content: center;
+	
+			image {
+				width: 300rpx;
+				height: 300rpx;
+			}
+			.msg{
+				margin-top: 20rpx;padding-bottom: 20rpx;
+				font-weight: 700;
+			}
+	
+		}
+		.content {
+			color: #333333;
+			// margin-top: 10rpx;
+			font-size: 34rpx;
+			text-align: center;
+		}
+	}
+	
+	.image {
+		width: 200px;
+		height: 200px;
+	}
+
+	.swiper-box {
+		height: calc(100vh - 50rpx);
+	}
+
+	page {
+		// background-color: #DDDDDD;
+		background-image: url('https://admin.xzlglobal.com/hsfile/bg_mp.jpg');
+		// background-size: 100% 100%;
+		background-repeat: no-repeat;
+	}
+
+	.u-page {
+		padding: 20px;
+	
+	}
+
+	.u-demo-block {
+		flex: 1;
+		padding: 0 40rpx;
+		margin-bottom: 10rpx;
+	}
+
+	.u-demo-block__content {
+		padding: 0 30upx;
+		line-height: 60upx;
+		margin-top: 20upx;
+		font-size: 34upx;
+
+	}
+
+
+	.bg-purple {
+		// text-align: right;
+		display: flex;
+		justify-content: space-between;
+		flex-direction: row;
+		color: #333333;
+	}
+
+	.bg-purple-light {
+		word-break: break-all;
+		font-weight: 600;
+	}
+	.zf_div{
+		.div_content{
+			background-color: #FCEAE0;
+			border: 10rpx solid #FFA733;
+		}
+		.gzz {
+			height: 350rpx;
+			background-image: url('https://qiniu.xzlglobal.com/work_bg1-1.png');
+			background-size: 100% 100%;
+			background-repeat: no-repeat;
+			// margin-bottom: 50rpx;
+			.div_title{
+				
+				margin-top: 105rpx;
+			}
+		}
+		.gzz_img {
+			// margin-top: 60rpx;
+			.content{
+				text-align: center;
+				color: #333333;
+			}
+			.border_div{
+				image {
+					height: 100rpx;
+					width: 100%;
+				}
+			}
+			
+			
+		}
+	}
+
+	.gzz_div{
+		.gzz {
+			height: 350rpx;
+			border-top-right-radius: 5px;
+			border-top-left-radius: 5px;
+			background-image: url('https://qiniu.xzlglobal.com/work_bg2.png');
+			background-size: 100%;
+			background-repeat: no-repeat;
+			margin-bottom: 20rpx;
+			.div_title{
+				margin-top: 125rpx;
+			}
+		}
+		.gzz_img {
+			// margin-top: 60rpx;
+			.content{
+				text-align: center;
+				padding: 20rpx;
+				color: #333333;
+			}
+			.border_div{
+				height: 20rpx;
+				background-color: #3A8CF0;
+				border-bottom-right-radius: 5px;
+				border-bottom-left-radius: 5px;
+			}
+			
+		}
+	}
+	.txz_div{
+		.gzz {
+			color: #FFFFFF;
+			height: 400rpx;
+			border-top-right-radius: 5px;
+			border-top-left-radius: 5px;
+			background-image: url('https://qiniu.xzlglobal.com/tqz_bg.png');
+			background-size: 100% 100%;
+			background-repeat: no-repeat;
+			margin-bottom:20rpx;
+			.div_title{
+				margin-bottom: 30rpx;
+				margin-top: 90upx;
+			}
+		}
+		.txz_img {
+			// margin-top: 60rpx;
+			
+		
+			image {
+				height: 40rpx;
+				width: 100%;
+				border-bottom-right-radius: 5px;
+				border-bottom-left-radius: 5px;
+			}
+		}
+	}
+	
+
+
+	.div_content {
+
+		background-color: #FFFFFF;
+		border-radius: 5px;
+		// padding: 30upx;
+		box-shadow: 5px 5px 5px 0 rgba(0, 0, 0, .05);
+		-webkit-box-shadow: #d4d2d2 0px 0px 10px;
+		-moz-box-shadow: #d4d2d2 0px 0px 10px;
+
+		.div_title {
+			flex-direction: row;
+			align-items: flex-end;
+			justify-content: center;
+			
+
+			image {
+				width: 120upx;
+				height: 120upx;
+			}
+
+			.font_title {
+				font-size: 42upx;
+				font-weight: 700;
+			}
+
+			.font_date {
+				font-size: 38upx;
+			}
+		}
+	}
+
+	.u-demo-block-state {
+		flex-direction: row;
+		align-items: center;
+		justify-content: center;
+
+		image {
+			width: 100upx;
+			height: 100upx;
+		}
+	}
+
+	.div_wangge_name {
+		text-align: center;
+		font-size: 60upx;
+		font-weight: 700;
+		margin-top: 30upx;
+	}
+
+	.message {
+
+		.title {
+			color: red;
+			text-align: center;
+			font-size: 40rpx;
+			font-weight: 700;
+			padding: 30upx 0;
+		}
+
+		.u-content {
+			color: red;
+			overflow-y: scroll;
+			padding: 30upx;
+			max-height: 600rpx
+		}
+	}
+
+	.state_name {
+		font-size: 60upx;
+		font-weight: 700;
+	}
+
+	.swiper-item-2 {
+		width: 667rpx;
+		margin: 0 auto;
+		height: 1125rpx;
+		margin: 0 auto 30rpx;
+		background: url(@/static/bb_bg.png) no-repeat;
+		background-size: 100% 100%;
+		text-align: center;
+		position: relative;
+
+		.footer {
+			width: 196rpx;
+			height: 196rpx;
+			background: url(@/static/logo1.png) center / 100% 100% no-repeat;
+			position: absolute;
+			bottom: 56rpx;
+			right: 140rpx;
+			white-space: nowrap;
+			text-align: center;
+			transform: translate(0, 0);
+
+			view {
+				position: absolute;
+				left: 50%;
+				transform: translateX(-50%);
+				color: #333333;
+			}
+
+			view:first-child {
+				margin-top: 60rpx;
+				font-weight: bold;
+				font-size: 33rpx;
+			}
+
+			view:last-child {
+				font-size: 29rpx;
+				margin-top: 100rpx;
+			}
+		}
+
+		.title {
+			font-size: 46rpx;
+			color: #333333;
+			padding-top: 92rpx;
+			font-weight: bold;
+		}
+
+		.time {
+			padding: 52rpx 0;
+			font-size: 38rpx;
+			color: #4CCD56;
+		}
+
+		.p {
+			text-align: left;
+			padding: 0 70rpx;
+			display: flex;
+			color: #333333;
+			font-size: 29rpx;
+			margin-bottom: 10rpx;
+			line-height: 50rpx;
+
+			.label {
+				width: 157rpx;
+				padding-right: 20rpx;
+				flex-shrink: 0;
+				text-align: justify;
+				position: relative;
+				height: 30rpx;
+
+				&::after {
+					content: '';
+					display: inline-block;
+					width: 100%;
+				}
+
+				&::before {
+					content: ':';
+					position: absolute;
+					right: 14rpx;
+				}
+			}
+		}
+
+		.expired {
+			width: 500rpx;
+			height: 258rpx;
+			background: #FFFFFF;
+			box-shadow: 0px 0px 21rpx 0rpx rgba(0, 0, 0, 0.1);
+			border-radius: 21rpx;
+			border: 2rpx solid #EEEEEE;
+			position: absolute;
+			left: 50%;
+			top: 50%;
+			transform: translate(-50%, -50%);
+
+			._title {
+				color: #DA0303;
+				font-size: 33rpx;
+				font-weight: bold;
+				padding: 25rpx 0;
+				text-align: center;
+				border-bottom: 2rpx solid #EEEEEE;
+			}
+
+			._content {
+				padding-top: 35rpx;
+
+				button {
+					width: 258rpx;
+					margin: 0 auto;
+					line-height: 92rpx;
+					background: #3A8CF0;
+					border-radius: 21rpx;
+					text-align: center;
+					font-size: 31rpx;
+					color: #fff;
+				}
+			}
+		}
+	}
+</style>

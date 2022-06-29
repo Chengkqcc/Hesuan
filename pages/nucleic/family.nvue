@@ -1,0 +1,386 @@
+<template>
+	<div class="backge" style="background-color: #f3f4f6;">
+		<view class="u-page">
+			<view class="search" @click="addPassProxyAdd">
+				<u-icon name="plus" color="#3A8CF0" size="40rpx"></u-icon>
+				<text style="color: #3A8CF0;">添加已申请家人</text>
+			</view>
+			<u-empty v-if="indexList&& indexList.length==0" :mode="mode" :icon="img">
+			</u-empty>
+			<u-list>
+				<u-swipe-action style='margin-bottom: 30upx;'>
+					<block v-for="(item, index) in indexList" :key="item.id">
+						<u-swipe-action-item :show="optionOpen" :options="options1"   @click="unbundle($event,item, index)">
+							<view style="padding: 20upx;" @click="getFamilyDetail(item)">
+								<u-row justify="center" align="center">
+									<u-col span="2">
+										<u-avatar v-if="item.permitAudit===1" size="90rpx" :src="item.userInfo.avatar">
+										</u-avatar>
+										<u-avatar v-else :src="item.avatar" size="90rpx">
+										</u-avatar>
+									</u-col>
+									<u-col span="7">
+										<view style="font-size: 36upx;font-weight: 700;">
+											{{item.permitAudit===1?item.userInfo.name:item.name}}</view>
+										<view style="margin-top: 10upx;color: #666666;font-size: 24upx;"
+											v-if="item.permitAudit===1">
+											证件号码：{{item.userInfo.idNumber |idcard }}</view>
+										<view v-else style="margin-top: 10upx;color: #666666;font-size: 24upx;">
+											证件号码：{{item.respondentIdNumber |idcard }}</view>
+										<view style="margin-top: 10upx;color: #666666;font-size: 24upx;">
+											申请日期：{{item.requestTime}}</view>
+									</u-col>
+									<u-col span="2">
+										<view v-if="item.permitAudit===1"
+											style="font-size: 30upx; text-align: right;color: #4CCD56;	">通过</view>
+										<view v-if="item.permitAudit===0"
+											style="font-size: 30upx; text-align: right;color: #F5BE2D;	">待审核</view>
+										<view v-if="item.permitAudit===2"
+											style="font-size: 30upx; text-align: right;color: #D23535;	">已驳回</view>
+									</u-col>
+								</u-row>
+							</view>
+							<!-- <u-line ></u-line> -->
+							<!-- <u-gap bgColor="#f3f4f6" height='10'></u-gap> -->
+						</u-swipe-action-item>
+						<view style="height: 10rpx;background: #f3f4f6;">
+
+						</view>
+					</block>
+
+				</u-swipe-action>
+				<!-- <u-list-item v-for="(item, index) in indexList" :key="index">
+					<u-swipe-action style='margin-bottom: 30upx;' >
+						<u-swipe-action-item :options="options1":autoClose='true' @click="unbundle(item)">
+							
+						</u-swipe-action-item>
+					</u-swipe-action>
+				</u-list-item> -->
+			</u-list>
+			<u-modal :show="show" :title="title" :content='content' :showCancelButton='true' @confirm="confirm"
+				@cancel='cancel'></u-modal>
+			<view style="position:absolute;z-index: 999">
+				<u-loading-page :loadingText="loadingPageData.loadingText" :image="loadingPageData.image"
+					:loadingMode="loadingPageData.loadingMode" :bgColor="loadingPageData.bgColor" :loading="loading"
+					:color="loadingPageData.color" :loadingColor="loadingPageData.loadingColor">
+				</u-loading-page>
+			</view>
+		</view>
+	</div>
+</template>
+
+<script>
+	import {
+		getOpenId,
+		userById,
+		unbundling,
+		userpassrecordAll,
+		useDeleteRecord
+	} from '../../common/api.js'
+	export default {
+		filters: {
+			idcard(str) {
+				if (!str) return '';
+				if (18 <= str.length) {
+					let leftStr = str.substring(0, 6);
+					let rightStr = str.substring(str.length - 4, str.length);
+
+					let strCon = ''
+					for (let i = 0; i < str.length - 4 - 6; i++) {
+						strCon += '*';
+					}
+					return leftStr + strCon + rightStr;
+				} else if (str.length > 4) {
+					return str.substr(0, str.length - 4) + '****'
+				} else {
+					return str.substr(0, str.length - 1) + '****'
+				}
+
+
+			},
+		},
+		data() {
+			return {
+				optionOpen: true,
+				hsCode: '',
+				show: false,
+				title: '驳回内容',
+				content: '',
+				openId: '',
+				loading: false,
+				loadingPageData: {
+					// 自定义提示内容
+					loadingText: '',
+					// 自定义图片
+					image: '',
+					// 自定义加载动画模式
+					loadingMode: '',
+					// 自定义背景色
+					bgColor: '#ffffff',
+				},
+				options1: [{
+					text: '扫一扫',
+					style: {
+						backgroundColor: '#3c9cff'
+					}
+				}, {
+					text: '删除',
+					style: {
+						backgroundColor: '#f56c6c'
+					}
+				}],
+
+				mode: 'list',
+				indexList: [
+					// {
+					//     hsFamilyMember: {
+					//         name: 'dawjdoaw',
+					//         hsCode: 'daw90d790edhioawdawd',
+					//         headUrl: 'https://img2.baidu.com/it/u=3895119537,2684520677&fm=253&fmt=auto&app=138&f=JPEG?w=500&h=500'
+					//     },
+					//     permitApply: {
+					//         status: 1
+					//     }
+					// }
+				],
+				urls: [
+
+				]
+			};
+		},
+		onShow() {
+			uni.hideShareMenu()
+			this.openLoadingPage()
+			this.getFamilyList();
+		},
+		onLoad() {
+			// this.getFamilyList()
+		},
+		methods: {
+			addPassProxyAdd() {
+				uni.navigateTo({
+					url: '/pages/nucleic/passProxyAdd'
+				});
+			},
+			openLoadingPage() {
+				this.loadingPageData = {
+					loadingText: '',
+					image: '',
+					loadingMode: '',
+					bgColor: '#ffffff',
+				}
+				// 自定义背景色
+				this.loadingPageData.loadingMode = 'spinner'
+				this.loadingPageData.bgColor = 'rgba(0, 0, 0, 0.4)'
+				this.loadingPageData.loadingText = "加载中"
+				this.loadingPageData.color = '#eee',
+					this.loading = true
+				setTimeout(() => {
+					this.loading = false
+				}, 1000)
+			},
+
+			//解绑
+			// unbundling(id) {
+			// 	var that = this
+			// 	unbundling(id).then(res => {
+			// 		if (res && JSON.stringify(res) !== "{}") {
+			// 			uni.showToast({
+			// 				title: '解绑成功',
+			// 				icon: 'success',
+			// 				duration: 2000
+			// 			});
+			// 			that.getFamilyList(that.openId)
+
+			// 		}
+
+			// 	}).catch(err => {
+
+			// 	})
+			// },
+
+			getFamilyList(openId) {
+				var that = this
+				try {
+					uni.showLoading({
+						title: '加载中',
+						mask: false
+					});
+					userpassrecordAll().then(res => {
+						console.log(res)
+						if (res && res.length > 0) {
+							that.indexList = res
+						} else {
+							that.indexList = []
+						}
+					}).catch(err => {
+
+					})
+				} catch (e) {
+					// error
+				}
+
+			},
+			//解绑申请人
+			unbundle(i, row, index) {
+				console.log(i)
+				var that = this
+				if (i.index == 1) {
+					uni.showModal({
+						title: '温馨提示',
+						content: '确定要删除绑定吗？',
+						success: res => {
+							if (res.confirm) {
+								uni.showLoading({
+									title: '加载中',
+									mask: true
+								});
+								useDeleteRecord(row.id).then(res => {
+									that.indexList.splice(index, 1)
+									// that.getFamilyList();
+								})
+							}
+						}
+					})
+				} else {
+					if (row.permitAudit === 1) {
+						console.log(row)
+						if (row.userInfo && row.userInfo.id) {
+							uni.scanCode({
+								success(res) {
+									uni.navigateTo({
+										url: `/pages/nucleic/permit?source=scanCodeRegister&documentType=${row.userInfo.documentType}&name=${row.userInfo.name}&familyIdCard=${row.respondentIdNumber}` +
+											'&qrResult=' +
+											res.result + '&userId=' +  row.userInfo.id
+									})
+								},
+								fail(err) {
+									if (err.errMsg.indexOf('cancel') != -1) {
+										return;
+									}
+									uni.showToast({
+										title: '无效的二维码',
+										icon: 'none'
+									})
+								}
+							})
+						} else {
+							uni.showToast({
+								title: '用户信息有误',
+								icon: 'none'
+							})
+						}
+
+
+					} else {
+						uni.$u.toast("通行证未审核通过的暂不支持扫码！");
+						return
+					}
+				}
+
+
+			},
+
+			getFamilyDetail({
+				respondentIdNumber,
+				documentType,
+				companyId,
+				name,
+				permitAudit,
+				rejectReason,
+				userInfo
+				
+			}) {
+				var that = this
+				if (permitAudit === 1) {
+					name = userInfo && userInfo.name?userInfo.name:name
+					// 通过
+					uni.navigateTo({
+						url: `/pages/nucleic/permit?documentType=${documentType}&name=${name}&familyIdCard=${respondentIdNumber}`
+					})
+				} else if (permitAudit === 0) {
+					// 待审核
+					uni.navigateTo({
+						url: '/pages/nucleic/applylose'
+					})
+				} else {
+					// 以驳回
+					uni.navigateTo({
+						url: '/pages/nucleic/applyreject?source=family&reject=' + rejectReason
+					})
+				}
+			},
+			//确定
+			confirm() {
+				this.show = false
+				uni.navigateTo({
+					url: '/pages/nucleic/uploadcard?actingType=1&hsCode=' + this.hsCode,
+				})
+			},
+			//关闭
+			cancel() {
+				this.show = false
+
+			},
+
+
+		},
+	}
+</script>
+
+<style lang="scss" scoped>
+	page {
+		background-color: #f3f4f6;
+	}
+
+	.backge {
+		height: 100vh;
+	}
+
+	.u-page {
+		padding: 0;
+		// &__button-item {
+		// 	margin: 0 15px 15px 0;
+		// }
+	}
+
+	.u-demo-block__title {
+		padding: 10px 0 2px 15px;
+	}
+
+	.swipe-action {
+		&__content {
+			padding: 25rpx 0;
+
+			&__text {
+				font-size: 15px;
+				color: $u-main-color;
+				padding-left: 30rpx;
+			}
+		}
+	}
+
+	.u-demo-block__content {
+		flex-direction: row;
+		flex-wrap: wrap;
+		align-items: center;
+	}
+
+	.demo_div {
+		left: 0;
+		position: fixed;
+		bottom: 0;
+		width: 100%;
+	}
+
+	.search {
+		display: flex;
+		flex-direction: row;
+		justify-content: center;
+		align-items: center;
+		background-color: #ffffff;
+		padding: 30upx;
+		margin-bottom: 20upx;
+		font-size: 33rpx;
+	}
+</style>

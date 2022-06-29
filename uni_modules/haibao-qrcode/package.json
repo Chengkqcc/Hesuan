@@ -1,0 +1,15 @@
+{
+    "id": "haibao-qrcode",
+    "name": "生成二维码",
+    "version": "1.0.0",
+    "description": "生成二维码小工具",
+    "keywords": [
+        "二维码"
+    ],
+    "dcloudext": {
+        "category": [
+            "uni-app前端模板",
+            "uni-app前端项目模板"
+        ]
+    }
+}
